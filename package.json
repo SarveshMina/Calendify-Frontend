@@ -1,0 +1,21 @@
+{
+  "name": "collaborative-calendar",
+  "version": "1.0.0",
+  "description": "Coursework for Cloud Application Development Group M",
+  "main": "app.js",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "gdeploy": "gcloud app deploy",
+    "hdeploy": "git push heroku master"
+  },
+  "author": "Group M",
+  "license": "Cloud App Coursework",
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "socket.io": "^4.3.1"
+  }
+}

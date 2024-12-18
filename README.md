@@ -1,2 +1,16 @@
-# CAD-gwc-backend
-Cloud Application Development Backend (Group M)
+# Cloud Application Group Coursework Group M
+
+Starting template for frontend.
+
+It is a simple chat application written in Javascript, using the Express server framework, VueJS and Socket.IO.
+
+## Running
+
+### Locally
+
+Start the application using:
+```
+$ npm start
+```
+
+### Deploying to the cloud
