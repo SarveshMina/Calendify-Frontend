@@ -1,19 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Calendify - Shared Calendar</title>
+</head>
+<body>
     <%- include('header'); -%>
+    <div id="container">
+        
+        <section class="landing">
+            <p>Calendify: Shared Calendar</p>
+            <p class="scroll-indicator">Welcome to your one-stop calendar</p>
+        </section>
 
-    <h2 class="title">Group M</h2>
+        <section class="content">
+            <div class="auth-container">
+                <div class="auth-section login">
+                    <h3>Login</h3>
+                    <input v-model="loginUsername" placeholder="Username">
+                    <input v-model="loginPassword" type="password" placeholder="Password">
+                    <button @click="login">Login</button>
+                </div>
 
-    <div id="game">
-        <div v-if="connected">
-            <%- include('chat'); -%>
-        </div>
-        <div v-else>
-            <p>Connecting...</p>
-        </div>
+                <div class="auth-section register">
+                    <h3>Register</h3>
+                    <input v-model="registerUsername" placeholder="Username">
+                    <input v-model="registerPassword" type="password" placeholder="Password">
+                    <button @click="register">Register</button>
+                </div>
+            </div>
+        </section>
     </div>
-
     <%- include('footer'); -%>
-
+</body>
 </html>
