@@ -20,8 +20,31 @@ const deleteEvent = (calendarId, eventId, userId) => {
     });
 };
 
+/**
+ * Create a personal calendar
+ * POST /personal-calendar/create
+ * Body: { userId, name }
+ */
+const createPersonalCalendar = (userId, name) => {
+    return axios.post(`${BACKEND_ENDPOINT}/personal-calendar/create`, {
+        userId,
+        name,
+    });
+};
+
+/**
+ * Get all calendars for this user
+ * GET /user/{userId}/calendars
+ */
+const getUserCalendars = (userId) => {
+    return axios.get(`${BACKEND_ENDPOINT}/user/${userId}/calendars`);
+};
+
 export default {
     getEvents,
     addEvent,
-    deleteEvent
+    deleteEvent,
+    // Add new export:
+    getUserCalendars,
+    createPersonalCalendar,
 };

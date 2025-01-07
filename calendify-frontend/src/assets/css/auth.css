@@ -10,9 +10,11 @@ html, body {
     height: 100%;
     width: 100%;
     overflow-x: hidden;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
     scroll-behavior: smooth;
     background: linear-gradient(to bottom, #ff4e50, #a03cc7, #6b8eff);
+    margin: 0;
+    color: var(--text-color);
 }
 
 .landing {
