@@ -1,0 +1,562 @@
+@import 'vue-cal/dist/vuecal.css'; /* Load base VueCal styles */
+
+/* Root Variables for Light and Dark Modes */
+:root {
+    /* Light Mode Colors */
+    --primary-color: #0078d4;          /* Bright Outlook Blue */
+    --secondary-color: #eef3fa;        /* Light background */
+    --bg-color: #ffffff;               /* Main background */
+    --text-color: #333333;             /* Dark text */
+    --header-bg-color: #f3f4f6;        /* Header background */
+    --event-color: #0078d4;            /* Event background */
+    --event-hover-color: #005fa3;      /* Event hover background */
+
+    /* Dark Mode Colors */
+    --dark-primary-color: #1e88e5;     /* Softer Blue */
+    --dark-secondary-color: #121212;    /* Dark background */
+    --dark-bg-color: #1e1e1e;          /* Slightly lighter */
+    --dark-text-color: #eaeaea;        /* Light text (Greyish White) */
+    --dark-header-bg-color: #242424;   /* Dark Header */
+    --dark-event-color: #1e88e5;       /* Dark Mode Event Background */
+    --dark-event-hover-color: #1565c0; /* Dark Mode Event Hover */
+}
+
+body {
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* Dark Mode Overrides */
+body.dark-mode {
+    color: #eaeaea; /* Greyish white for all text */
+    background-color: var(--dark-bg-color);
+}
+
+/* Exclude Buttons from Text Color Change in Dark Mode */
+body.dark-mode button {
+    color: #fff;                            /* Button text remains white */
+    background-color: var(--primary-color); /* Button background blue */
+}
+
+body.dark-mode button:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Button Base Styles */
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    color: #fff;                             /* All button texts white */
+    background-color: var(--primary-color);  /* Light mode: blue background */
+}
+
+button:hover {
+    background-color: var(--event-hover-color); /* Light mode: darker blue on hover */
+}
+
+
+.toggle-container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent; /* No background */
+    border: none; /* Remove all borders */
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    box-shadow: none; /* Ensure no shadow */
+    outline: none; /* No focus outline */
+}
+
+.toggle-container img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.5s ease, filter 0.3s ease; /* Add transform transition */
+}
+
+.toggle-container:hover img {
+    filter: brightness(0.8);
+}
+
+/* Add rotation when dark mode toggles */
+body.dark-mode .toggle-container img {
+    transform: rotate(180deg); /* Rotate 180 degrees */
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+
+
+
+
+.btn-add-event {
+    margin-top: 10px;
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                             /* White text */
+    font-size: 1rem;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-event:hover {
+    background-color: var(--event-hover-color);
+}
+
+/* Header Styles */
+.blue-header {
+    grid-column: 1 / span 2; /* Header spans both columns */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .blue-header {
+    background-color: var(--dark-header-bg-color);
+    color: #eaeaea; /* Greyish white text */
+}
+
+/* Sidebar Styles */
+.blue-sidebar {
+    grid-row: 2;
+    grid-column: 1; /* Sidebar in column 1 */
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .blue-sidebar {
+    background-color: var(--dark-secondary-color);
+    color: #eaeaea; /* Greyish white text */
+}
+
+.blue-sidebar h3 {
+    margin-top: 0;
+}
+
+.blue-sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.blue-sidebar li {
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.blue-sidebar li:hover {
+    background-color: #e5e7eb;
+}
+
+body.dark-mode .blue-sidebar li:hover {
+    background-color: #333333; /* Dark mode: darker background */
+}
+
+.blue-sidebar li.active {
+    border-left: 4px solid var(--primary-color);
+    font-weight: 600;
+    background-color: #dbeafe; /* Light blue highlight */
+}
+
+body.dark-mode .blue-sidebar li.active {
+    background-color: var(--dark-primary-color); /* Dark mode: blue highlight */
+}
+
+/* Create Calendar Button */
+.btn-create-calendar {
+    margin-top: 20px;
+    padding: 8px 16px;
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                             /* White text */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-create-calendar:hover {
+    background-color: var(--event-hover-color);
+}
+
+body.dark-mode .btn-create-calendar {
+    background-color: var(--dark-primary-color); /* Dark mode: blue background */
+}
+
+body.dark-mode .btn-create-calendar:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Main Content Area */
+.blue-main {
+    grid-row: 2;
+    grid-column: 2; /* Main content in column 2 */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 20px;
+    overflow-y: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .blue-main {
+    background-color: var(--dark-bg-color);
+    color: #eaeaea; /* Greyish white text */
+}
+
+/* Calendar Container */
+.personal-calendar {
+    background: var(--bg-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .personal-calendar {
+    background-color: var(--dark-bg-color);
+    color: #eaeaea;
+}
+
+.personal-calendar h2 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: color 0.3s ease;
+}
+
+body.dark-mode .personal-calendar h2 {
+    color: #eaeaea;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Modal Content */
+.modal-content {
+    background: #ffffff;
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--dark-secondary-color);
+    color: #eaeaea;
+}
+
+/* Modal Header */
+.modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+body.dark-mode .modal-content h3 {
+    color: #eaeaea;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+body.dark-mode .form-group label {
+    color: #eaeaea;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+}
+
+/* Modal Buttons */
+.modal-content button {
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                            /* White text */
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: var(--event-hover-color);
+}
+
+.modal-content button.btn-cancel {
+    background-color: #f3f4f6;            /* Light grey background */
+    color: #333333;                        /* Dark text */
+}
+
+.modal-content button.btn-cancel:hover {
+    background-color: #ddd;                /* Darker grey on hover */
+}
+
+/* Align Buttons in Modal */
+.modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Submit and Cancel Buttons in Modals */
+.btn-submit {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: var(--event-hover-color);
+}
+
+.btn-cancel {
+    background-color: #ddd;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+body.dark-mode .btn-cancel {
+    background-color: #555555; /* Darker grey in dark mode */
+    color: #fff;
+}
+
+body.dark-mode .btn-cancel:hover {
+    background-color: #777777;
+}
+
+/* VueCal Customizations */
+.vuecal--blue-theme {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.vuecal--blue-theme .vuecal__header,
+.vuecal--blue-theme .vuecal__navigation {
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__header,
+body.dark-mode .vuecal--blue-theme .vuecal__navigation {
+    background-color: var(--dark-header-bg-color);
+    color: #eaeaea;
+}
+
+.vuecal--blue-theme .vuecal__menu,
+.vuecal--blue-theme .vuecal__title-bar {
+    background-color: #2488D6; /* Dark mode: same blue background */
+    color: #fff;                            /* White text */
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__menu{
+    background-color: var(--primary-color); /* Dark mode: same blue background */
+    color: #fff;                            /* White text */
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__title-bar {
+    background-color: #2488D6; /* Dark mode: same blue background */
+    color: #fff;                            /* White text */
+}
+
+.vuecal--blue-theme .vuecal__weekdays {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__weekdays {
+    background-color: var(--dark-secondary-color);
+    color: #eaeaea;
+}
+
+.vuecal--blue-theme .vuecal__event {
+    background-color: var(--event-color);
+    color: #ffffff; /* Event text white */
+    border: 1px solid var(--event-hover-color);
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__event {
+    background-color: var(--dark-event-color);
+    color: #ffffff; /* Event text remains white */
+    border: 1px solid var(--dark-event-hover-color);
+}
+
+.vuecal--blue-theme .vuecal__event:hover {
+    background-color: var(--event-hover-color);
+}
+
+body.dark-mode .vuecal--blue-theme .vuecal__event:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Layout */
+.blue-container {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Sidebar: 250px, Main: auto */
+    grid-template-rows: 60px auto;    /* Header: 60px, then Main area */
+    height: 100vh;                     /* Full viewport height */
+}
+
+.blue-header {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .blue-header {
+    background-color: var(--dark-header-bg-color);
+    color: #eaeaea; /* Greyish white text */
+}
+
+.header-left h1 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-right span {
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+.header-right button {
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                            /* White text */
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.header-right button:hover {
+    background-color: var(--event-hover-color);
+}
+
+body.dark-mode .header-right button {
+    background-color: var(--primary-color); /* Dark mode: same blue background */
+    color: #fff;                            /* White text */
+}
+
+body.dark-mode .header-right button:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Sidebar List Items */
+.blue-sidebar ul li {
+    background-color: #fff;
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .blue-sidebar ul li {
+    background-color: #333333; /* Dark mode: darker background */
+    color: #eaeaea;            /* Greyish white text */
+}
+
+.blue-sidebar li.active {
+    border-left: 4px solid var(--primary-color);
+    font-weight: 600;
+    background-color: #dbeafe; /* Light blue highlight */
+}
+
+body.dark-mode .blue-sidebar li.active {
+    background-color: var(--dark-primary-color); /* Dark mode: blue highlight */
+}
+
+/* Error Message */
+.error {
+    color: red;
+    margin-top: 10px;
+}

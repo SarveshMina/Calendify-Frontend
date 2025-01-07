@@ -6,7 +6,7 @@ const BACKEND_ENDPOINT = process.env.VUE_APP_BACKEND_ENDPOINT || 'http://localho
 
 const getEvents = (calendarId, userId) => {
     return axios.get(`${BACKEND_ENDPOINT}/calendar/${calendarId}/events`, {
-        params: { userId }
+        params: { userId },
     });
 };
 
@@ -15,9 +15,24 @@ const addEvent = (calendarId, eventData) => {
 };
 
 const deleteEvent = (calendarId, eventId, userId) => {
-    return axios.delete(`${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/delete`, {
-        data: { userId }
-    });
+    return axios.delete(
+        `${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/delete`,
+        {
+            data: { userId },
+        }
+    );
+};
+
+/**
+ * UPDATE an event
+ * PUT /calendar/{calendarId}/event/{eventId}/update
+ * Body: { userId, title, startTime, endTime, description }
+ */
+const updateEvent = (calendarId, eventId, updateData) => {
+    return axios.put(
+        `${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/update`,
+        updateData
+    );
 };
 
 /**
@@ -44,7 +59,7 @@ export default {
     getEvents,
     addEvent,
     deleteEvent,
-    // Add new export:
+    updateEvent,
     getUserCalendars,
     createPersonalCalendar,
 };

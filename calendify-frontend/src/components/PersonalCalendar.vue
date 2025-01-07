@@ -2,10 +2,11 @@
   <div class="personal-calendar">
     <h2>{{ calendarName }}</h2>
 
-    <!-- VueCal with "blue" theme -->
+    <!-- VueCal Calendar -->
     <vue-cal
         ref="calendarRef"
         default-view="month"
+        :disable-views-transition="true"
         :events="vueCalEvents"
         style="height: 600px;"
         class="vuecal--blue-theme"
@@ -14,68 +15,108 @@
         @cell-click="handleCellClick"
     />
 
-    <!-- "Add Event" Button -->
+    <!-- "Add Event" button -->
     <button class="btn-add-event" @click="openAddEventModal">
       + Add Event
     </button>
 
-    <!-- Modal for Creating an Event -->
+    <!-- MODAL: Create Event -->
     <div v-if="showAddEventModal" class="modal-backdrop" @click.self="closeAddEventModal">
       <div class="modal-content">
         <h3>Create New Event</h3>
         <form @submit.prevent="createEvent">
           <div class="form-group">
             <label for="eventTitle">Title</label>
-            <input
-                id="eventTitle"
-                v-model="newEventTitle"
-                required
-            />
-          </div>
-          <div class="form-group">
-            <label for="startTime">Start Time</label>
-            <input
-                id="startTime"
-                type="datetime-local"
-                v-model="newEventStart"
-                required
-            />
-          </div>
-          <div class="form-group">
-            <label for="endTime">End Time</label>
-            <input
-                id="endTime"
-                type="datetime-local"
-                v-model="newEventEnd"
-                required
-            />
-          </div>
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea
-                id="description"
-                v-model="newEventDescription"
-                rows="3"
-            ></textarea>
+            <input id="eventTitle" v-model="newEventTitle" required />
           </div>
 
-          <button type="submit" class="btn-submit">Add Event</button>
-          <button type="button" class="btn-cancel" @click="closeAddEventModal">Cancel</button>
+          <div class="form-group">
+            <label for="startTime">Start Time</label>
+            <input id="startTime" type="datetime-local" v-model="newEventStart" required />
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">End Time</label>
+            <input id="endTime" type="datetime-local" v-model="newEventEnd" required />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" v-model="newEventDescription" rows="3"></textarea>
+          </div>
+
+          <!-- Buttons section -->
+          <div class="modal-buttons">
+            <button type="submit" class="btn-submit">Add Event</button>
+            <button type="button" class="btn-cancel" @click="closeAddEventModal">Cancel</button>
+          </div>
         </form>
       </div>
     </div>
 
-    <!-- Event Detail Modal -->
+    <!-- MODAL: Event Information -->
     <div v-if="showDetailModal && selectedEvent" class="modal-backdrop" @click.self="closeDetailModal">
       <div class="modal-content">
-        <h3>Event Detail</h3>
+        <h3>Event Information</h3>
         <p><strong>Title:</strong> {{ selectedEvent.title }}</p>
         <p><strong>Start:</strong> {{ selectedEvent.start }}</p>
         <p><strong>End:</strong> {{ selectedEvent.end }}</p>
         <p><strong>Description:</strong> {{ selectedEvent.description || '(No Description)' }}</p>
 
-        <button @click="deleteEvent(selectedEvent.id)">Delete</button>
-        <button @click="closeDetailModal">Close</button>
+        <!-- Buttons section -->
+        <div class="modal-buttons">
+          <button class="btn-submit" @click="openEditModal">Edit</button>
+          <button class="btn-submit" @click="deleteEvent(selectedEvent.id)">Delete</button>
+          <button class="btn-cancel" @click="closeDetailModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- MODAL: Edit Event -->
+    <div v-if="showEditModal && selectedEvent" class="modal-backdrop" @click.self="closeEditModal">
+      <div class="modal-content">
+        <h3>Edit Event</h3>
+        <form @submit.prevent="updateEvent">
+          <div class="form-group">
+            <label for="editTitle">Title</label>
+            <input id="editTitle" v-model="editEventTitle" required />
+          </div>
+
+          <div class="form-group">
+            <label for="editStart">Start Time</label>
+            <input
+                id="editStart"
+                type="datetime-local"
+                v-model="editEventStart"
+                required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="editEnd">End Time</label>
+            <input
+                id="editEnd"
+                type="datetime-local"
+                v-model="editEventEnd"
+                required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="editDescription">Description</label>
+            <textarea
+                id="editDescription"
+                v-model="editEventDescription"
+                rows="3"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">Save Changes</button>
+          <button type="button" class="btn-cancel" @click="closeEditModal">
+            Cancel
+          </button>
+        </form>
       </div>
     </div>
 
@@ -88,6 +129,7 @@
 import axios from 'axios';
 import VueCal from 'vue-cal';
 import 'vue-cal/dist/vuecal.css';
+import '@/assets/styles/styles.css';
 
 export default {
   name: 'PersonalCalendar',
@@ -103,18 +145,25 @@ export default {
       vueCalEvents: [],
       error: null,
 
-      // Add Event Modal
+      // "Add Event" modal
       showAddEventModal: false,
       newEventTitle: '',
       newEventStart: '',
       newEventEnd: '',
       newEventDescription: '',
 
-      // Event Detail Modal
+      // Event Information modal
       showDetailModal: false,
       selectedEvent: null,
 
-      // Current View
+      // Edit Event modal
+      showEditModal: false,
+      editEventTitle: '',
+      editEventStart: '',
+      editEventEnd: '',
+      editEventDescription: '',
+
+      // Current calendar view
       currentView: 'month',
     };
   },
@@ -123,24 +172,21 @@ export default {
   },
   watch: {
     calendarId(newId, oldId) {
-      // If the prop changes, re-fetch events
       if (newId !== oldId) {
         this.fetchEvents();
       }
-    }
+    },
   },
   methods: {
-    // Load events from your backend
+    // Load events from the backend
     async fetchEvents() {
       try {
         const res = await axios.get(
             `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/events`,
-            {
-              params: { userId: this.userId },
-            }
+            { params: { userId: this.userId } }
         );
         const events = res.data.events || [];
-        // Format events for VueCal
+        // Format for VueCal
         this.vueCalEvents = events.map((ev) => ({
           id: ev.eventId,
           title: ev.title,
@@ -153,7 +199,7 @@ export default {
       }
     },
 
-    // Converts ISO to "YYYY-MM-DD HH:mm" for VueCal
+    // Convert ISO date to "YYYY-MM-DD HH:mm" for VueCal
     formatForVueCal(isoString) {
       if (!isoString) return '';
       const d = new Date(isoString);
@@ -166,7 +212,7 @@ export default {
       return `${y}-${m}-${day} ${hh}:${mm}`;
     },
 
-    // Converts a Date object to "YYYY-MM-DDTHH:mm" for <input type="datetime-local">
+    // Convert Date obj to "YYYY-MM-DDTHH:mm" for <input type="datetime-local">
     toLocalDateTime(dateObj) {
       if (!(dateObj instanceof Date)) return '';
       const y = dateObj.getFullYear();
@@ -177,30 +223,28 @@ export default {
       return `${y}-${m}-${d}T${hh}:${mm}`;
     },
 
-    // Show the Add Event modal
+    // Show the "Add Event" modal
     openAddEventModal() {
       this.showAddEventModal = true;
-      // Reset the fields
       this.newEventTitle = '';
       this.newEventDescription = '';
-      // Optionally, pre-fill the start/end times for the current day
+      // Pre-fill start/end times with next hour
       const now = new Date();
       this.newEventStart = this.toLocalDateTime(now);
       now.setHours(now.getHours() + 1);
       this.newEventEnd = this.toLocalDateTime(now);
     },
-
     closeAddEventModal() {
       this.showAddEventModal = false;
     },
 
-    // Create the event
+    // Create event
     async createEvent() {
       try {
         const payload = {
           userId: this.userId,
           title: this.newEventTitle,
-          startTime: this.newEventStart, // "YYYY-MM-DDTHH:mm"
+          startTime: this.newEventStart,
           endTime: this.newEventEnd,
           description: this.newEventDescription,
         };
@@ -208,7 +252,6 @@ export default {
             `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event`,
             payload
         );
-        // Refresh events
         this.fetchEvents();
         this.closeAddEventModal();
       } catch (err) {
@@ -216,15 +259,62 @@ export default {
       }
     },
 
-    // Event click => open detail modal
-    handleEventClick({ event }) {
-      if (!event) return;
-      this.selectedEvent = { ...event };
+    // Single-click an event => open the Event Information modal
+    handleEventClick(eventObj) {
+      console.log('Clicked event =>', eventObj);
+      // Save selectedEvent
+      this.selectedEvent = { ...eventObj };
+      // Show detail modal
       this.showDetailModal = true;
     },
     closeDetailModal() {
       this.showDetailModal = false;
       this.selectedEvent = null;
+    },
+
+    // Edit button => open the Edit Event modal
+    openEditModal() {
+      if (!this.selectedEvent) return;
+
+      this.showDetailModal = false; // close the detail modal
+      this.showEditModal = true;
+
+      // Pre-fill edit form
+      this.editEventTitle = this.selectedEvent.title;
+      // Convert "YYYY-MM-DD HH:mm" => Date => local datetime
+      const startDate = new Date(this.selectedEvent.start.replace(' ', 'T'));
+      const endDate = new Date(this.selectedEvent.end.replace(' ', 'T'));
+      this.editEventStart = this.toLocalDateTime(startDate);
+      this.editEventEnd = this.toLocalDateTime(endDate);
+      this.editEventDescription = this.selectedEvent.description || '';
+    },
+    closeEditModal() {
+      this.showEditModal = false;
+    },
+
+    // Save changes (PUT update)
+    async updateEvent() {
+      if (!this.selectedEvent) return;
+      if (!confirm('Are you sure you want to update this event?')) return;
+
+      try {
+        const eventId = this.selectedEvent.id; // same as eventId
+        const payload = {
+          userId: this.userId,
+          title: this.editEventTitle,
+          startTime: this.editEventStart,
+          endTime: this.editEventEnd,
+          description: this.editEventDescription,
+        };
+        await axios.put(
+            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${eventId}/update`,
+            payload
+        );
+        this.fetchEvents();
+        this.closeEditModal();
+      } catch (err) {
+        this.error = err?.response?.data?.error || 'Failed to update event.';
+      }
     },
 
     // Delete event
@@ -235,18 +325,17 @@ export default {
       try {
         await axios.delete(
             `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${eventId}/delete`,
-            {
-              data: { userId: this.userId },
-            }
+            { data: { userId: this.userId } }
         );
         this.fetchEvents();
+        // Close detail modal if open
         this.closeDetailModal();
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to delete event.';
       }
     },
 
-    // Track view changes
+    // If user switches the view (month/week/day)
     handleViewChange(newView) {
       if (newView?.view) {
         this.currentView = newView.view.toLowerCase();
@@ -254,14 +343,13 @@ export default {
       // Optionally close modals
       this.closeAddEventModal();
       this.closeDetailModal();
+      this.closeEditModal();
     },
 
-    // Cell click => optionally open the Add Event modal with pre-filled date/time
+    // Clicking an empty cell => create new event modal
     handleCellClick(cellInfo) {
-      this.showAddEventModal = true;
-      this.newEventTitle = '';
-      this.newEventDescription = '';
-
+      this.openAddEventModal();
+      // Pre-fill times
       const date = cellInfo?.date || cellInfo?.start;
       if (date instanceof Date) {
         this.newEventStart = this.toLocalDateTime(date);
@@ -273,124 +361,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-@import 'vue-cal/dist/vuecal.css'; /* ensures base VueCal styles are loaded first */
-
-/* Container styling */
-.personal-calendar {
-  background-color: #fff;
-  border-radius: 6px;
-  padding: 20px;
-  position: relative;
-}
-
-.personal-calendar h2 {
-  margin-top: 0;
-}
-
-/* "Add Event" button styling */
-.btn-add-event {
-  margin-top: 10px;
-  background-color: #0078d4; /* Outlook Blue */
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-add-event:hover {
-  background-color: #005fa3;
-}
-
-/* Modal Backdrop */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-
-/* Modal Content */
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 6px;
-  width: 400px;
-  max-width: 90%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-.form-group label {
-  display: inline-block;
-  margin-bottom: 6px;
-  font-weight: 600;
-}
-
-/* Submit & Cancel in Modal */
-.btn-submit {
-  background-color: #0078d4;
-  border: none;
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 4px;
-  margin-right: 10px;
-  cursor: pointer;
-}
-.btn-submit:hover {
-  background-color: #005fa3;
-}
-.btn-cancel {
-  background-color: #ddd;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Error message */
-.error {
-  color: red;
-  margin-top: 10px;
-}
-
-/* ------------------------
-   Custom "Blue" Theme for VueCal
-   (we override some classes to mimic Outlook)
-------------------------- */
-.vuecal--blue-theme {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.vuecal--blue-theme .vuecal__header,
-.vuecal--blue-theme .vuecal__navigation {
-  background-color: #0078d4;
-  color: #fff;
-}
-
-.vuecal--blue-theme .vuecal__weekdays {
-  background-color: #f3f4f6;
-  color: #333;
-}
-
-/* Today highlight */
-.vuecal--blue-theme .vuecal__cell.vuecal__cell--today {
-  background-color: rgba(0, 120, 212, 0.15);
-}
-
-/* Events */
-.vuecal--blue-theme .vuecal__event {
-  background-color: #0078d4 !important;
-  border: 1px solid #005fa3 !important;
-  color: #fff !important;
-}
-</style>
