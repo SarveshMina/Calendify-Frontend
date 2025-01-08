@@ -84,7 +84,7 @@ button:hover {
 .toggle-container img {
     width: 30px;
     height: 30px;
-    transition: transform 0.5s ease, filter 0.3s ease; /* Add transform transition */
+    transition: transform 1s ease, filter 0.7s ease; /* Add transform transition */
 }
 
 .toggle-container:hover img {

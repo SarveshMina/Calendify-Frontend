@@ -1,22 +1,23 @@
 <!-- src/App.vue -->
+
 <template>
   <div id="app">
     <router-view />
+    <NotificationPopUp /> <!-- Ensure the correct component is used -->
   </div>
 </template>
 
 <script>
+import NotificationPopUp from '@/components/NotificationPopUp.vue'; // Correct import
+
 export default {
   name: 'App',
+  components: {
+    NotificationPopUp, // Registering the component
+  },
 };
 </script>
 
 <style>
-/* Global styles can be added here */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
-  margin: 0;
-  padding: 0;
-}
+/* Any global styles if necessary */
 </style>

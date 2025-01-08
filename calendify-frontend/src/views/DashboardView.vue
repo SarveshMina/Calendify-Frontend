@@ -87,7 +87,7 @@
           <!-- Buttons Section -->
           <div class="modal-buttons">
             <button class="btn-edit" @click="openEditModal">Edit</button>
-            <button class="btn-delete" @click="deleteCalendar">Delete Calendar</button>
+            <button class="btn-delete" @click="confirmDeleteCalendar">Delete Calendar</button>
             <button class="btn-cancel" @click="closeDetailsModal">Close</button>
           </div>
         </div>
@@ -101,6 +101,17 @@
           <button class="btn-cancel" @click="closeEditModal">Close</button>
         </div>
       </div>
+
+      <!-- Confirmation Modal for Deletion -->
+      <ConfirmationModal
+          :visible="showConfirmDeleteModal"
+          title="Confirm Deletion"
+          message="Are you sure you want to delete this calendar? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          @confirm="deleteCalendar"
+          @cancel="closeConfirmDeleteModal"
+      />
     </aside>
 
     <!-- Main content: big calendar -->
@@ -119,12 +130,13 @@
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import PersonalCalendar from '@/components/PersonalCalendar.vue';
+import ConfirmationModal from '@/components/ConfirmationModal.vue'; // Import the modal
 import calendarService from '@/services/calendarService'; // importing service
 import '@/assets/styles/styles.css'; // importing global styles
 
 export default {
   name: 'DashboardView',
-  components: { PersonalCalendar },
+  components: { PersonalCalendar, ConfirmationModal },
   data() {
     return {
       userCalendars: [],
@@ -136,6 +148,8 @@ export default {
       showDetailsModal: false,
       // For editing calendar (placeholder)
       showEditModal: false,
+      // For confirmation modal
+      showConfirmDeleteModal: false,
       // Icons for dark mode toggle
       moonIcon: require('@/assets/icons/moon.svg'),
       sunIcon: require('@/assets/icons/sun.svg'),
@@ -152,7 +166,7 @@ export default {
     this.fetchUserCalendars();
   },
   methods: {
-    ...mapActions(['logout']),
+    ...mapActions(['logout', 'notify']),
     handleLogout() {
       this.logout();
       this.$router.push('/');
@@ -178,6 +192,7 @@ export default {
         }
       } catch (err) {
         console.error('Failed to fetch user calendars:', err);
+        this.notify({ type: 'error', message: 'Failed to fetch calendars.' });
       }
     },
 
@@ -186,6 +201,7 @@ export default {
       // Close any open modals when switching calendars
       this.closeDetailsModal();
       this.closeEditModal();
+      this.closeConfirmDeleteModal();
     },
 
     // CREATE CALENDAR FLOW
@@ -206,8 +222,11 @@ export default {
 
         // Refresh the calendar list so the new one appears
         await this.fetchUserCalendars();
+
+        this.notify({ type: 'success', message: 'Personal calendar created successfully.' });
       } catch (err) {
         console.error('Error creating a personal calendar:', err);
+        this.notify({ type: 'error', message: 'Failed to create personal calendar.' });
       }
     },
 
@@ -230,22 +249,27 @@ export default {
     },
 
     // DELETE CALENDAR FLOW
+    confirmDeleteCalendar() {
+      this.showConfirmDeleteModal = true;
+    },
+    closeConfirmDeleteModal() {
+      this.showConfirmDeleteModal = false;
+    },
     async deleteCalendar() {
       if (!this.activeCalendar) return;
-      if (!confirm(`Are you sure you want to delete the calendar "${this.activeCalendar.name}"? This action cannot be undone.`)) {
-        return;
-      }
 
       try {
+        // Pass both calendarId and userId
         await calendarService.deletePersonalCalendar(this.activeCalendar.calendarId, this.userId);
-        alert('Calendar deleted successfully.');
+        this.notify({ type: 'success', message: 'Calendar deleted successfully.' });
         // Refresh the calendar list
         await this.fetchUserCalendars();
-        // Close the modal
+        // Close the modals
         this.closeDetailsModal();
+        this.closeConfirmDeleteModal();
       } catch (err) {
         console.error('Error deleting calendar:', err);
-        alert('Failed to delete calendar. Please try again.');
+        this.notify({ type: 'error', message: 'Failed to delete calendar. Please try again.' });
       }
     },
 
@@ -256,3 +280,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* No additional styles needed as we're using global styles */
+</style>

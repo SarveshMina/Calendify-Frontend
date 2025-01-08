@@ -66,12 +66,11 @@
         <!-- Buttons section -->
         <div class="modal-buttons">
           <button class="btn-submit" @click="openEditModal">Edit</button>
-          <button class="btn-submit" @click="deleteEvent(selectedEvent.id)">Delete</button>
+          <button class="btn-delete" @click="confirmDeleteEvent">Delete</button>
           <button class="btn-cancel" @click="closeDetailModal">Close</button>
         </div>
       </div>
     </div>
-
 
     <!-- MODAL: Edit Event -->
     <div v-if="showEditModal && selectedEvent" class="modal-backdrop" @click.self="closeEditModal">
@@ -120,20 +119,35 @@
       </div>
     </div>
 
+    <!-- Confirmation Modal for Deletion -->
+    <ConfirmationModal
+        :visible="showConfirmDeleteModal"
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        @confirm="deleteEvent"
+        @cancel="closeConfirmDeleteModal"
+    />
+
     <!-- Display any error messages -->
     <div v-if="error" class="error">{{ error }}</div>
   </div>
 </template>
 
 <script>
+// Import necessary helpers and components
+import { mapActions } from 'vuex'; // Added import for mapActions
 import axios from 'axios';
 import VueCal from 'vue-cal';
 import 'vue-cal/dist/vuecal.css';
+import ConfirmationModal from '@/components/ConfirmationModal.vue'; // Ensure correct path
+// If using NotificationPopUp instead, adjust the import accordingly
 import '@/assets/styles/styles.css';
 
 export default {
   name: 'PersonalCalendar',
-  components: { VueCal },
+  components: { VueCal, ConfirmationModal },
   props: {
     userId: { type: String, required: true },
     calendarId: { type: String, required: true },
@@ -163,8 +177,8 @@ export default {
       editEventEnd: '',
       editEventDescription: '',
 
-      // Current calendar view
-      currentView: 'month',
+      // Confirmation modal for event deletion
+      showConfirmDeleteModal: false,
     };
   },
   mounted() {
@@ -178,6 +192,8 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['notify']), // Now mapActions is correctly imported
+
     // Load events from the backend
     async fetchEvents() {
       try {
@@ -196,6 +212,7 @@ export default {
         }));
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to load events.';
+        this.notify({ type: 'error', message: this.error });
       }
     },
 
@@ -254,8 +271,10 @@ export default {
         );
         this.fetchEvents();
         this.closeAddEventModal();
+        this.notify({ type: 'success', message: 'Event created successfully.' });
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to create event.';
+        this.notify({ type: 'error', message: this.error });
       }
     },
 
@@ -295,7 +314,6 @@ export default {
     // Save changes (PUT update)
     async updateEvent() {
       if (!this.selectedEvent) return;
-      if (!confirm('Are you sure you want to update this event?')) return;
 
       try {
         const eventId = this.selectedEvent.id; // same as eventId
@@ -312,26 +330,37 @@ export default {
         );
         this.fetchEvents();
         this.closeEditModal();
+        this.notify({ type: 'success', message: 'Event updated successfully.' });
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to update event.';
+        this.notify({ type: 'error', message: this.error });
       }
     },
 
     // Delete event
-    async deleteEvent(eventId) {
-      if (!eventId) return;
-      if (!confirm('Are you sure you want to delete this event?')) return;
-
+    confirmDeleteEvent() {
+      this.showConfirmDeleteModal = true;
+    },
+    closeConfirmDeleteModal() {
+      this.showConfirmDeleteModal = false;
+    },
+    async deleteEvent() {
+      if (!this.selectedEvent) return;
+      // Replace browser confirm with custom modal
       try {
         await axios.delete(
-            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${eventId}/delete`,
+            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${this.selectedEvent.id}/delete`,
             { data: { userId: this.userId } }
         );
         this.fetchEvents();
         // Close detail modal if open
         this.closeDetailModal();
+        // Close confirmation modal
+        this.closeConfirmDeleteModal();
+        this.notify({ type: 'success', message: 'Event deleted successfully.' });
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to delete event.';
+        this.notify({ type: 'error', message: this.error });
       }
     },
 
@@ -344,6 +373,7 @@ export default {
       this.closeAddEventModal();
       this.closeDetailModal();
       this.closeEditModal();
+      this.closeConfirmDeleteModal();
     },
 
     // Clicking an empty cell => create new event modal
@@ -361,3 +391,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* No additional styles needed as we're using global styles */
+</style>

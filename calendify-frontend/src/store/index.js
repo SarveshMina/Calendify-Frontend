@@ -2,6 +2,7 @@
 
 import { createStore } from 'vuex';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid'; // Importing uuid for unique IDs
 
 const BACKEND_ENDPOINT = 'http://localhost:7071'; // Update if your backend endpoint differs
 
@@ -9,6 +10,7 @@ export default createStore({
     state: {
         userId: localStorage.getItem('userId') || '',
         defaultCalendarId: localStorage.getItem('defaultCalendarId') || '',
+        notifications: [], // Adding notifications array to state
     },
     mutations: {
         SET_USER_ID(state, userId) {
@@ -21,35 +23,64 @@ export default createStore({
             state.userId = '';
             state.defaultCalendarId = '';
         },
+        ADD_NOTIFICATION(state, notification) {
+            state.notifications.push(notification);
+        },
+        REMOVE_NOTIFICATION(state, notificationId) {
+            state.notifications = state.notifications.filter(n => n.id !== notificationId);
+        },
     },
     actions: {
-        async login({ commit }, credentials) {
-            const response = await axios.post(`${BACKEND_ENDPOINT}/login`, credentials);
-            const { userId, default_calendar_id } = response.data;
-            commit('SET_USER_ID', userId);
-            commit('SET_DEFAULT_CALENDAR_ID', default_calendar_id);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('defaultCalendarId', default_calendar_id);
+        async login({ commit, dispatch }, credentials) {
+            try {
+                const response = await axios.post(`${BACKEND_ENDPOINT}/login`, credentials);
+                const { userId, default_calendar_id } = response.data;
+                commit('SET_USER_ID', userId);
+                commit('SET_DEFAULT_CALENDAR_ID', default_calendar_id);
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('defaultCalendarId', default_calendar_id);
+                dispatch('notify', { type: 'success', message: 'Logged in successfully.' });
+            } catch (error) {
+                dispatch('notify', { type: 'error', message: error?.response?.data?.error || 'Login failed.' });
+                throw error;
+            }
         },
 
-        async register({ commit }, credentials) {
-            const response = await axios.post(`${BACKEND_ENDPOINT}/register`, credentials);
-            const { userId, homeCalendarId } = response.data;
-            commit('SET_USER_ID', userId);
-            commit('SET_DEFAULT_CALENDAR_ID', homeCalendarId);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('defaultCalendarId', homeCalendarId);
+        async register({ commit, dispatch }, credentials) {
+            try {
+                const response = await axios.post(`${BACKEND_ENDPOINT}/register`, credentials);
+                const { userId, homeCalendarId } = response.data;
+                commit('SET_USER_ID', userId);
+                commit('SET_DEFAULT_CALENDAR_ID', homeCalendarId);
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('defaultCalendarId', homeCalendarId);
+                dispatch('notify', { type: 'success', message: 'Registered successfully.' });
+            } catch (error) {
+                dispatch('notify', { type: 'error', message: error?.response?.data?.error || 'Registration failed.' });
+                throw error;
+            }
         },
 
-        logout({ commit }) {
+        logout({ commit, dispatch }) {
             commit('CLEAR_AUTH');
             localStorage.removeItem('userId');
             localStorage.removeItem('defaultCalendarId');
+            dispatch('notify', { type: 'info', message: 'Logged out successfully.' });
+        },
+
+        notify({ commit }, { type, message }) {
+            const id = uuidv4(); // Generate unique ID for each notification
+            commit('ADD_NOTIFICATION', { id, type, message });
+            // Automatically remove the notification after 3 seconds
+            setTimeout(() => {
+                commit('REMOVE_NOTIFICATION', id);
+            }, 4000);
         },
     },
     getters: {
         isAuthenticated: (state) => !!state.userId,
         userId: (state) => state.userId,
         defaultCalendarId: (state) => state.defaultCalendarId,
+        notifications: (state) => state.notifications, // Getter for notifications
     },
 });
