@@ -1,12 +1,12 @@
 <template>
-  <div :class="['personal-calendar', `theme-${calendarColor}`]">
+  <div :class="['personal-calendar', `theme-${calendarColor}`, { 'dark-mode': isDarkMode }]">
     <h2>{{ calendarName }}</h2>
 
     <!-- VueCal Calendar -->
     <vue-cal
         :key="calendarColorKey"
         ref="calendarRef"
-        :class="calendarThemeClass"
+        :class="['vuecal--custom-theme', calendarThemeClass]"
         default-view="month"
         :disable-views-transition="true"
         :events="vueCalEvents"

@@ -1,9 +1,9 @@
-@import 'vue-cal/dist/vuecal.css'; /* Load base VueCal styles */
-
-/*
+/* ----------------------------------------------------------------
    1. ROOT VARIABLES (Default light & dark)
-   These define the base "blue" theme as the fallback if no theme class is present.
-*/
+   These define the base themes as per your setup.
+------------------------------------------------------------------*/
+@import 'vue-cal/dist/vuecal.css'; /* Ensure VueCal base CSS is already imported */
+
 :root {
     /* Light Mode Colors */
     --primary-color: #0078d4;          /* Bright Outlook Blue */
@@ -13,8 +13,6 @@
     --header-bg-color: #f3f4f6;        /* Header background */
     --event-color: #0078d4;            /* Event background */
     --event-hover-color: #005fa3;      /* Event hover background */
-    --menu-color: #0078d4;             /* Menu background */
-    --title-bar-color: #0078d4;        /* Title bar background */
 
     /* Dark Mode Colors */
     --dark-primary-color: #1e88e5;     /* Softer Blue */
@@ -26,11 +24,10 @@
     --dark-event-hover-color: #1565c0; /* Dark Mode Event Hover */
 }
 
-/*
+/* ----------------------------------------------------------------
    2. THEME CLASSES for Pink, Green, Yellow, Red, Purple, Orange.
-   By default, if no theme-xxx class is present, we'll assume "blue" styling
-   (the root variables).
-*/
+   By default, if no theme-xxx class is present, we'll assume "blue".
+------------------------------------------------------------------*/
 
 /* BLUE THEME (Fallback / Default) */
 .theme-blue {
@@ -41,8 +38,6 @@
     --header-bg-color: #f3f4f6;
     --event-color: #0078d4;
     --event-hover-color: #005fa3;
-    --menu-color: #0078d4;             /* Menu background */
-    --title-bar-color: #0078d4;        /* Title bar background */
 }
 .theme-blue.dark-mode {
     --bg-color: #1e1e1e;
@@ -146,9 +141,9 @@
     --header-bg-color: #fff3e0;
 }
 
-/*
+/* ----------------------------------------------------------------
    3. GLOBAL BODY STYLES + DARK MODE
-*/
+------------------------------------------------------------------*/
 body {
     color: var(--text-color);
     background-color: var(--bg-color);
@@ -169,9 +164,9 @@ body.dark-mode button:hover {
     background-color: var(--event-hover-color);
 }
 
-/*
+/* ----------------------------------------------------------------
    4. BASE BUTTONS + TOGGLE, etc.
-*/
+------------------------------------------------------------------*/
 button {
     padding: 8px 16px;
     border: none;
@@ -209,13 +204,12 @@ button:hover {
     filter: brightness(0.8);
 }
 body.dark-mode .toggle-container img {
-    transform: rotate(180deg); /* Rotate 180 degrees on dark toggle */
+    transform: rotate(180deg);
 }
 
-/*
+/* ----------------------------------------------------------------
    5. HEADER + SIDEBAR + MAIN LAYOUT
-   (The "blue-container" grid layout)
-*/
+------------------------------------------------------------------*/
 .blue-container {
     display: grid;
     grid-template-columns: 250px 1fr; /* Sidebar: 250px, Main: auto */
@@ -309,7 +303,8 @@ body.dark-mode .blue-sidebar {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: var(--event-color); /* color indicator based on event color var */
+    /* Instead of var(--event-color), we use our custom property: */
+    background-color: var(--cal-indicator);
 }
 .blue-sidebar li:hover {
     background-color: #e5e7eb;
@@ -320,8 +315,9 @@ body.dark-mode .blue-sidebar li:hover {
 .blue-sidebar li.active {
     border-left: 4px solid var(--primary-color);
     font-weight: 600;
-    background-color: #dbeafe; /* Light highlight */
+    background-color: #dbeafe;
 }
+
 body.dark-mode .blue-sidebar li.active {
     background-color: var(--dark-primary-color);
 }
@@ -334,9 +330,9 @@ body.dark-mode .blue-sidebar li.active {
     margin-top: 20px;
 }
 
-/*
+/* ----------------------------------------------------------------
    6. MAIN CONTENT AREA (right)
-*/
+------------------------------------------------------------------*/
 .blue-main {
     grid-row: 2;
     grid-column: 2;
@@ -505,11 +501,12 @@ body.dark-mode .btn-cancel:hover {
     background-color: #777777;
 }
 
-/*
+/* ----------------------------------------------------------------
    9. VUECAL THEME OVERRIDES
-   (the “vuecal--blue-theme” is the base in your code)
-*/
-.vuecal--blue-theme {
+   We'll reference a custom class .vuecal--custom-theme
+   Make sure to apply this class to your <vue-cal> component.
+------------------------------------------------------------------*/
+.vuecal--custom-theme {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     border-radius: 12px;
     overflow: hidden;
@@ -517,225 +514,207 @@ body.dark-mode .btn-cancel:hover {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Basic header / menu / title bar backgrounds for any .theme-xxx usage */
-.theme-blue .vuecal--blue-theme .vuecal__header,
-.theme-pink .vuecal--blue-theme .vuecal__header,
-.theme-green .vuecal--blue-theme .vuecal__header,
-.theme-yellow .vuecal--blue-theme .vuecal__header,
-.theme-red .vuecal--blue-theme .vuecal__header,
-.theme-purple .vuecal--blue-theme .vuecal__header,
-.theme-orange .vuecal--blue-theme .vuecal__header {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+/* Menu + Title - Light Mode overrides by theme */
+.theme-blue .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
 }
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__header,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__header {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+.theme-blue .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
 }
 
-/* Same logic for .vuecal__menu */
-.theme-blue .vuecal--blue-theme .vuecal__menu,
-.theme-pink .vuecal--blue-theme .vuecal__menu,
-.theme-green .vuecal--blue-theme .vuecal__menu,
-.theme-yellow .vuecal--blue-theme .vuecal__menu,
-.theme-red .vuecal--blue-theme .vuecal__menu,
-.theme-purple .vuecal--blue-theme .vuecal__menu,
-.theme-orange .vuecal--blue-theme .vuecal__menu {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+.theme-pink .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #e91e63 */
+    color: #fff !important;
 }
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__menu,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__menu {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+.theme-pink .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/* Same logic for .vuecal__title-bar */
-.theme-blue .vuecal--blue-theme .vuecal__title-bar,
-.theme-pink .vuecal--blue-theme .vuecal__title-bar,
-.theme-green .vuecal--blue-theme .vuecal__title-bar,
-.theme-yellow .vuecal--blue-theme .vuecal__title-bar,
-.theme-red .vuecal--blue-theme .vuecal__title-bar,
-.theme-purple .vuecal--blue-theme .vuecal__title-bar,
-.theme-orange .vuecal--blue-theme .vuecal__title-bar {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+.theme-green .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #4caf50 */
+    color: #fff !important;
 }
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__title-bar,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__title-bar {
-    background-color: var(--primary-color);
-    color: var(--primary-color);
+.theme-green .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/* .vuecal__weekdays area */
-.theme-blue .vuecal--blue-theme .vuecal__weekdays,
-.theme-pink .vuecal--blue-theme .vuecal__weekdays,
-.theme-green .vuecal--blue-theme .vuecal__weekdays,
-.theme-yellow .vuecal--blue-theme .vuecal__weekdays,
-.theme-red .vuecal--blue-theme .vuecal__weekdays,
-.theme-purple .vuecal--blue-theme .vuecal__weekdays,
-.theme-orange .vuecal--blue-theme .vuecal__weekdays {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
+.theme-yellow .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ffeb3b */
+    color: #333 !important; /* Dark text for readability */
 }
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__weekdays,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__weekdays {
-    background-color: var(--dark-secondary-color);
-    color: #eaeaea;
+.theme-yellow .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/* .vuecal__event styling across themes */
-.theme-blue .vuecal--blue-theme .vuecal__event,
-.theme-pink .vuecal--blue-theme .vuecal__event,
-.theme-green .vuecal--blue-theme .vuecal__event,
-.theme-yellow .vuecal--blue-theme .vuecal__event,
-.theme-red .vuecal--blue-theme .vuecal__event,
-.theme-purple .vuecal--blue-theme .vuecal__event,
-.theme-orange .vuecal--blue-theme .vuecal__event {
-    background-color: var(--event-color);
-    color: var(--event-color);
-    border: 1px solid var(--event-hover-color);
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
+.theme-red .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #f44336 */
+    color: #fff !important;
 }
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__event,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__event {
-    background-color: var(--event-color);
-    color: #ffffff;
-    border: 1px solid var(--dark-event-hover-color);
-}
-.theme-blue .vuecal--blue-theme .vuecal__event:hover,
-.theme-pink .vuecal--blue-theme .vuecal__event:hover,
-.theme-green .vuecal--blue-theme .vuecal__event:hover,
-.theme-yellow .vuecal--blue-theme .vuecal__event:hover,
-.theme-red .vuecal--blue-theme .vuecal__event:hover,
-.theme-purple .vuecal--blue-theme .vuecal__event:hover,
-.theme-orange .vuecal--blue-theme .vuecal__event:hover {
-    background-color: var(--event-hover-color);
-}
-.theme-blue.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-pink.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-green.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-yellow.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-red.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-purple.dark-mode .vuecal--blue-theme .vuecal__event:hover,
-.theme-orange.dark-mode .vuecal--blue-theme .vuecal__event:hover {
-    background-color: var(--event-color);
+.theme-red .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/*
-   10. NAVIGATION STYLES
-   (Ensures navigation links are styled appropriately within the sidebar)
-*/
-
-/* Sidebar Navigation Links */
-.blue-sidebar ul li a {
-    display: block;
-    color: var(--text-color);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: color 0.3s ease, background-color 0.3s ease;
+.theme-purple .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #9c27b0 */
+    color: #fff !important;
 }
-body.dark-mode .blue-sidebar ul li a {
-    color: #eaeaea;
-}
-.blue-sidebar ul li a:hover {
-    color: var(--primary-color);
-    /* Optional: Add underline or other effects */
-}
-body.dark-mode .blue-sidebar ul li a:hover {
-    color: var(--primary-color);
+.theme-purple .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/* Active Navigation Link */
-.blue-sidebar ul li.active a {
-    color: #fff;
-    background-color: var(--primary-color);
-    border-radius: 4px;
+.theme-orange .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ff9800 */
+    color: #fff !important;
 }
-body.dark-mode .blue-sidebar ul li.active a {
-    background-color: var(--dark-primary-color);
-}
-
-/* Additional Navigation Styling (if needed) */
-
-/* If you have a top navigation bar, add styles below */
-.top-navigation {
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    background-color: var(--header-bg-color);
-    color: var(--text-color);
-    height: 60px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-body.dark-mode .top-navigation {
-    background-color: var(--dark-header-bg-color);
-    color: #eaeaea;
-}
-.top-navigation ul {
-    list-style: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
-}
-.top-navigation ul li {
-    margin-right: 20px;
-    position: relative;
-}
-.top-navigation ul li a {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-body.dark-mode .top-navigation ul li a {
-    color: #eaeaea;
-}
-.top-navigation ul li a:hover {
-    color: var(--primary-color);
-}
-.top-navigation ul li.active a {
-    color: #fff;
-    background-color: var(--primary-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-}
-body.dark-mode .top-navigation ul li.active a {
-    background-color: var(--dark-primary-color);
+.theme-orange .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
 }
 
-/* Responsive Navigation (Optional) */
+/* Dark Mode overrides for Menu + Title */
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
+}
+
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #e91e63 */
+    color: #fff !important;
+}
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #4caf50 */
+    color: #fff !important;
+}
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ffeb3b */
+    color: #333 !important; /* Dark text for readability */
+}
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #f44336 */
+    color: #fff !important;
+}
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #9c27b0 */
+    color: #fff !important;
+}
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ff9800 */
+    color: #fff !important;
+}
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+/* VueCal Weekdays */
+.theme-blue .vuecal--custom-theme .vuecal__weekdays,
+.theme-pink .vuecal--custom-theme .vuecal__weekdays,
+.theme-green .vuecal--custom-theme .vuecal__weekdays,
+.theme-yellow .vuecal--custom-theme .vuecal__weekdays,
+.theme-red .vuecal--custom-theme .vuecal__weekdays,
+.theme-purple .vuecal--custom-theme .vuecal__weekdays,
+.theme-orange .vuecal--custom-theme .vuecal__weekdays {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__weekdays {
+    background-color: var(--dark-secondary-color) !important;
+    color: #eaeaea !important;
+}
+
+/* VueCal Events */
+.theme-blue .vuecal--custom-theme .vuecal__event,
+.theme-pink .vuecal--custom-theme .vuecal__event,
+.theme-green .vuecal--custom-theme .vuecal__event,
+.theme-yellow .vuecal--custom-theme .vuecal__event,
+.theme-red .vuecal--custom-theme .vuecal__event,
+.theme-purple .vuecal--custom-theme .vuecal__event,
+.theme-orange .vuecal--custom-theme .vuecal__event {
+    background-color: var(--event-color) !important;
+    color: #ffffff !important; /* White text */
+    border: 1px solid var(--event-hover-color) !important;
+    border-radius: 6px !important;
+    transition: background-color 0.3s ease !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__event {
+    background-color: var(--dark-event-color) !important;
+    color: #ffffff !important; /* White text */
+    border: 1px solid var(--dark-event-hover-color) !important;
+}
+.theme-blue .vuecal--custom-theme .vuecal__event:hover,
+.theme-pink .vuecal--custom-theme .vuecal__event:hover,
+.theme-green .vuecal--custom-theme .vuecal__event:hover,
+.theme-yellow .vuecal--custom-theme .vuecal__event:hover,
+.theme-red .vuecal--custom-theme .vuecal__event:hover,
+.theme-purple .vuecal--custom-theme .vuecal__event:hover,
+.theme-orange .vuecal--custom-theme .vuecal__event:hover {
+    background-color: var(--event-hover-color) !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__event:hover {
+    background-color: var(--dark-event-hover-color) !important;
+}
+
+/* ----------------------------------------------------------------
+   Responsive if needed
+------------------------------------------------------------------*/
 @media (max-width: 768px) {
     .blue-container {
-        grid-template-columns: 1fr; /* Sidebar collapses */
-        grid-template-rows: 60px auto; /* Header and then main content */
+        grid-template-columns: 1fr; /* Hide or stack sidebar? */
+        grid-template-rows: 60px auto;
     }
     .blue-sidebar {
         display: none; /* Hide sidebar on small screens */
@@ -743,5 +722,13 @@ body.dark-mode .top-navigation ul li.active a {
     .blue-header {
         justify-content: space-between;
     }
-    /* Add hamburger menu styles if implementing a responsive menu */
+    /* Add hamburger menu logic if implementing responsive navigation */
+}
+
+/* ----------------------------------------------------------------
+   Error message color
+------------------------------------------------------------------*/
+.error {
+    color: red;
+    margin-top: 10px;
 }

@@ -39,9 +39,13 @@
             :key="cal.calendarId"
             @click="setActiveCalendar(cal.calendarId)"
             :class="{ active: cal.calendarId === activeCalendarId }"
+            :style="{
+                 '--cal-indicator': cal.color || 'blue'
+            }"
         >
           {{ cal.name }}
         </li>
+
       </ul>
 
       <!-- Buttons Section -->
