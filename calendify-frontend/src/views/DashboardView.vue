@@ -1,5 +1,13 @@
 <template>
-  <div class="blue-container">
+  <!-- If activeCalendar exists, use that color; otherwise fallback to theme-blue -->
+  <div
+      :class="[
+      'blue-container',
+      activeCalendar?.color
+        ? `theme-${activeCalendar.color}`
+        : 'theme-blue'
+    ]"
+  >
     <!-- Outlook-Inspired Header -->
     <header class="blue-header">
       <div class="header-left">
@@ -7,13 +15,16 @@
       </div>
       <div class="header-right">
         <span>User ID: {{ userId }}</span>
-        <!-- Dark Mode Toggle Button -->
         <button
             @click="toggleDarkMode"
             class="toggle-container"
             aria-label="Toggle Dark Mode"
         >
-          <img :src="darkMode ? moonIcon : sunIcon" alt="Dark Mode Toggle" class="toggle-icon" />
+          <img
+              :src="darkMode ? moonIcon : sunIcon"
+              alt="Dark Mode Toggle"
+              class="toggle-icon"
+          />
         </button>
         <button @click="handleLogout">Logout</button>
       </div>
@@ -58,6 +69,28 @@
             <div class="form-group">
               <label for="calendarName">Calendar Name:</label>
               <input id="calendarName" v-model="newCalendarName" required />
+            </div>
+
+            <!-- Color Selection -->
+            <div class="form-group">
+              <label for="calendarColor">Choose a Color:</label>
+              <div id="calendarColor" class="color-options">
+                <label
+                    v-for="color in availableColors"
+                    :key="color.value"
+                    :style="{ backgroundColor: color.value }"
+                    class="color-option"
+                >
+                  <input
+                      type="radio"
+                      name="calendarColor"
+                      :value="color.value"
+                      v-model="selectedColor"
+                      required
+                  />
+                  <span class="color-label">{{ color.name }}</span>
+                </label>
+              </div>
             </div>
 
             <button type="submit" class="btn-submit">Create</button>
@@ -120,7 +153,8 @@
           v-if="activeCalendarId"
           :userId="userId"
           :calendarId="activeCalendarId"
-          :calendar-name="activeCalendar.name"
+          :calendar-color="activeCalendar?.color || 'blue'"
+          :calendar-name="activeCalendar?.name || 'My Calendar'"
       />
       <p v-else>Loading calendar...</p>
     </main>
@@ -144,6 +178,15 @@ export default {
       // For creating a new calendar
       showCreateModal: false,
       newCalendarName: '',
+      selectedColor: '', // Added for color selection
+      availableColors: [
+        { name: 'Pink', value: 'pink' },
+        { name: 'Green', value: 'green' },
+        { name: 'Yellow', value: 'yellow' },
+        { name: 'Red', value: 'red' },
+        { name: 'Purple', value: 'purple' },
+        { name: 'Orange', value: 'orange' },
+      ],
       // For viewing calendar details
       showDetailsModal: false,
       // For editing calendar (placeholder)
@@ -176,7 +219,7 @@ export default {
         const response = await calendarService.getUserCalendars(this.userId);
         const data = response.data;
         if (data.calendars) {
-          // Filter for personal only (isGroup === false), if desired
+          // Ensure that color is included
           this.userCalendars = data.calendars.filter((cal) => cal.isGroup === false);
 
           if (this.userCalendars.length > 0) {
@@ -208,14 +251,15 @@ export default {
     openCreateModal() {
       this.showCreateModal = true;
       this.newCalendarName = '';
+      this.selectedColor = ''; // Reset color selection
     },
     closeCreateModal() {
       this.showCreateModal = false;
     },
     async createNewCalendar() {
       try {
-        // Call the service to create a personal calendar
-        await calendarService.createPersonalCalendar(this.userId, this.newCalendarName);
+        // Call the service to create a personal calendar with color
+        await calendarService.createPersonalCalendar(this.userId, this.newCalendarName, this.selectedColor);
 
         // Close modal
         this.closeCreateModal();

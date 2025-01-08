@@ -1,23 +1,38 @@
-<!-- src/App.vue -->
-
 <template>
-  <div id="app">
+  <div :class="['app-container', currentThemeClass]">
     <router-view />
-    <NotificationPopUp /> <!-- Ensure the correct component is used -->
+    <NotificationPopUp />
   </div>
 </template>
 
 <script>
-import NotificationPopUp from '@/components/NotificationPopUp.vue'; // Correct import
+import NotificationPopUp from '@/components/NotificationPopUp.vue';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'App',
   components: {
-    NotificationPopUp, // Registering the component
+    NotificationPopUp,
+  },
+  computed: {
+    ...mapGetters(['activeCalendarColor']),
+    currentThemeClass() {
+      return this.activeCalendarColor ? `theme-${this.activeCalendarColor}` : 'theme-blue';
+    },
+  },
+  mounted() {
+    this.fetchCalendars();
+  },
+  methods: {
+    ...mapActions(['fetchCalendars']),
   },
 };
 </script>
 
 <style>
-/* Any global styles if necessary */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 </style>

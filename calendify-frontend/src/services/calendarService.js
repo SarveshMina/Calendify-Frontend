@@ -31,24 +31,6 @@ const updateEvent = (calendarId, eventId, updateData, userId) => {
     );
 };
 
-const createPersonalCalendar = (userId, name) => {
-    return axios.post(`${BACKEND_ENDPOINT}/personal-calendar/create`, {
-        userId,
-        name,
-    });
-};
-
-const getUserCalendars = (userId) => {
-    return axios.get(`${BACKEND_ENDPOINT}/user/${userId}/calendars`);
-};
-
-
-const deletePersonalCalendar = (calendarId, userId) => {
-    return axios.post(`${BACKEND_ENDPOINT}/personal-calendar/${calendarId}/delete`, {
-        userId,
-    });
-};
-
 /**
  * Create a Group Calendar
  * POST /group-calendar/create
@@ -91,10 +73,43 @@ export default {
     addEvent,
     deleteEvent,
     updateEvent,
-    createPersonalCalendar,
-    getUserCalendars,
+
+    /**
+     * Creates a new personal calendar.
+     * @param {String} userId - The ID of the user creating the calendar.
+     * @param {String} name - The name of the new calendar.
+     * @param {String} color - The color theme of the calendar.
+     * @returns {Promise} Axios response promise.
+     */
+    async createPersonalCalendar(userId, name, color) {
+        const payload = {
+            userId,
+            name,
+            color,
+        };
+        return await axios.post(`${BACKEND_ENDPOINT}/personal-calendar/create`, payload);
+    },
+
+    /**
+     * Deletes a personal calendar.
+     * @param {String} calendarId - The ID of the calendar to delete.
+     * @param {String} userId - The ID of the user requesting deletion.
+     * @returns {Promise} Axios response promise.
+     */
+    async deletePersonalCalendar(calendarId, userId) {
+        const payload = { userId };
+        return await axios.delete(`${BACKEND_ENDPOINT}/calendar/${calendarId}/delete_personal`, { data: payload });
+    },
+
+    /**
+     * Retrieves all calendars for a user.
+     * @param {String} userId - The ID of the user.
+     * @returns {Promise} Axios response promise.
+     */
+    async getUserCalendars(userId) {
+        return await axios.get(`${BACKEND_ENDPOINT}/user/${userId}/calendars`);
+    },
     createGroupCalendar,               // Added
     addUserToGroupCalendar,            // Added
     removeUserFromGroupCalendar,       // Added
-    deletePersonalCalendar,
 };

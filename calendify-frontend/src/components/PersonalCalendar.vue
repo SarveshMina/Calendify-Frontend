@@ -1,15 +1,16 @@
 <template>
-  <div class="personal-calendar">
+  <div :class="['personal-calendar', `theme-${calendarColor}`]">
     <h2>{{ calendarName }}</h2>
 
     <!-- VueCal Calendar -->
     <vue-cal
+        :key="calendarColorKey"
         ref="calendarRef"
+        :class="calendarThemeClass"
         default-view="month"
         :disable-views-transition="true"
         :events="vueCalEvents"
         style="height: 600px;"
-        class="vuecal--blue-theme"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
         @cell-click="handleCellClick"
@@ -63,7 +64,7 @@
         <p><strong>End:</strong> {{ selectedEvent.end }}</p>
         <p><strong>Description:</strong> {{ selectedEvent.description || '(No Description)' }}</p>
 
-        <!-- Buttons section -->
+        <!-- Buttons Section -->
         <div class="modal-buttons">
           <button class="btn-submit" @click="openEditModal">Edit</button>
           <button class="btn-delete" @click="confirmDeleteEvent">Delete</button>
@@ -137,12 +138,11 @@
 
 <script>
 // Import necessary helpers and components
-import { mapActions } from 'vuex'; // Added import for mapActions
+import { mapActions } from 'vuex'; // Ensure mapActions is imported
 import axios from 'axios';
 import VueCal from 'vue-cal';
 import 'vue-cal/dist/vuecal.css';
 import ConfirmationModal from '@/components/ConfirmationModal.vue'; // Ensure correct path
-// If using NotificationPopUp instead, adjust the import accordingly
 import '@/assets/styles/styles.css';
 
 export default {
@@ -152,9 +152,12 @@ export default {
     userId: { type: String, required: true },
     calendarId: { type: String, required: true },
     calendarName: { type: String, default: 'My Personal Calendar' },
+    calendarColor: { type: String, default: 'blue' }, // Added prop for color
   },
   data() {
     return {
+      showCalendar: true,
+      calendarColorKey: 0,
       // VueCal events
       vueCalEvents: [],
       error: null,
@@ -190,9 +193,18 @@ export default {
         this.fetchEvents();
       }
     },
+    calendarColor() { // Removed newColor and oldColor parameters
+      // Update VueCal theme when calendar color changes
+      this.calendarColorKey++;
+    },
+  },
+  computed: {
+    calendarThemeClass() {
+      return `theme-${this.calendarColor}`;
+    },
   },
   methods: {
-    ...mapActions(['notify']), // Now mapActions is correctly imported
+    ...mapActions(['notify']), // Ensure mapActions is mapped
 
     // Load events from the backend
     async fetchEvents() {

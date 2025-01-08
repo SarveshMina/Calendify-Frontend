@@ -1,9 +1,6 @@
 @import 'vue-cal/dist/vuecal.css'; /* Load base VueCal styles */
 
-/*
-   1. ROOT VARIABLES (Default light & dark)
-   These define the base "blue" theme as the fallback if no theme class is present.
-*/
+/* Root Variables for Light and Dark Modes */
 :root {
     /* Light Mode Colors */
     --primary-color: #0078d4;          /* Bright Outlook Blue */
@@ -13,8 +10,6 @@
     --header-bg-color: #f3f4f6;        /* Header background */
     --event-color: #0078d4;            /* Event background */
     --event-hover-color: #005fa3;      /* Event hover background */
-    --menu-color: #0078d4;             /* Menu background */
-    --title-bar-color: #0078d4;        /* Title bar background */
 
     /* Dark Mode Colors */
     --dark-primary-color: #1e88e5;     /* Softer Blue */
@@ -26,13 +21,9 @@
     --dark-event-hover-color: #1565c0; /* Dark Mode Event Hover */
 }
 
-/*
-   2. THEME CLASSES for Pink, Green, Yellow, Red, Purple, Orange.
-   By default, if no theme-xxx class is present, we'll assume "blue" styling
-   (the root variables).
-*/
+/* Theme Classes */
 
-/* BLUE THEME (Fallback / Default) */
+/* Blue Theme (Default) */
 .theme-blue {
     --primary-color: #0078d4;
     --secondary-color: #eef3fa;
@@ -41,16 +32,15 @@
     --header-bg-color: #f3f4f6;
     --event-color: #0078d4;
     --event-hover-color: #005fa3;
-    --menu-color: #0078d4;             /* Menu background */
-    --title-bar-color: #0078d4;        /* Title bar background */
 }
+
 .theme-blue.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #242424;
 }
 
-/* PINK THEME */
+/* Pink Theme */
 .theme-pink {
     --primary-color: #e91e63;
     --secondary-color: #ffe0f0;
@@ -60,13 +50,14 @@
     --event-color: #e91e63;
     --event-hover-color: #c2185b;
 }
+
 .theme-pink.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #ffe0f0;
 }
 
-/* GREEN THEME */
+/* Green Theme */
 .theme-green {
     --primary-color: #4caf50;
     --secondary-color: #e8f5e9;
@@ -76,13 +67,14 @@
     --event-color: #4caf50;
     --event-hover-color: #388e3c;
 }
+
 .theme-green.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #e8f5e9;
 }
 
-/* YELLOW THEME */
+/* Yellow Theme */
 .theme-yellow {
     --primary-color: #ffeb3b;
     --secondary-color: #fffde7;
@@ -92,13 +84,14 @@
     --event-color: #ffeb3b;
     --event-hover-color: #fbc02d;
 }
+
 .theme-yellow.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #fffde7;
 }
 
-/* RED THEME */
+/* Red Theme */
 .theme-red {
     --primary-color: #f44336;
     --secondary-color: #ffebee;
@@ -108,13 +101,14 @@
     --event-color: #f44336;
     --event-hover-color: #d32f2f;
 }
+
 .theme-red.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #ffebee;
 }
 
-/* PURPLE THEME */
+/* Purple Theme */
 .theme-purple {
     --primary-color: #9c27b0;
     --secondary-color: #f3e5f5;
@@ -124,13 +118,14 @@
     --event-color: #9c27b0;
     --event-hover-color: #7b1fa2;
 }
+
 .theme-purple.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #f3e5f5;
 }
 
-/* ORANGE THEME */
+/* Orange Theme */
 .theme-orange {
     --primary-color: #ff9800;
     --secondary-color: #fff3e0;
@@ -140,90 +135,154 @@
     --event-color: #ff9800;
     --event-hover-color: #fb8c00;
 }
+
 .theme-orange.dark-mode {
     --bg-color: #1e1e1e;
     --text-color: #eaeaea;
     --header-bg-color: #fff3e0;
 }
 
-/*
-   3. GLOBAL BODY STYLES + DARK MODE
-*/
+/* Body Styles */
 body {
     color: var(--text-color);
     background-color: var(--bg-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     transition: all 0.3s ease;
 }
+
+/* Dark Mode Overrides */
 body.dark-mode {
     color: var(--text-color);
     background-color: var(--bg-color);
 }
 
-/* Exclude Buttons from text color changes in dark mode */
+/* Exclude Buttons from Text Color Change in Dark Mode */
 body.dark-mode button {
-    color: #fff;
-    background-color: var(--primary-color);
+    color: #fff;                            /* Button text remains white */
+    background-color: var(--primary-color); /* Button background based on theme */
 }
+
 body.dark-mode button:hover {
     background-color: var(--event-hover-color);
 }
 
-/*
-   4. BASE BUTTONS + TOGGLE, etc.
-*/
+/* Button Base Styles */
 button {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease, color 0.3s ease;
-    color: #fff;
-    background-color: var(--primary-color);
-}
-button:hover {
-    background-color: var(--event-hover-color);
+    color: #fff;                             /* All button texts white */
+    background-color: var(--primary-color);  /* Light mode: theme primary color */
 }
 
-/* Dark Mode Toggle Container */
-.toggle-container {
-    background-color: transparent !important;
-    box-shadow: none !important;
+button:hover {
+    background-color: var(--event-hover-color); /* Light mode: theme hover color */
+}
+
+/* Color Options Styles */
+.color-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.color-option {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+    transition: border 0.3s ease;
+}
+
+.color-option input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.color-option input:checked + .color-label::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+}
+
+.color-option:hover {
+    border: 2px solid #000;
+}
+
+.color-label {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent; /* Hide the text, only show checkmark when selected */
+    font-size: 1.2rem;
+    position: relative;
+}
+
+
+/* Toggle Container Styles */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent; /* No background */
+    border: none; /* Remove all borders */
     padding: 0;
     margin: 0;
     cursor: pointer;
-    outline: none;
+    box-shadow: none; /* Ensure no shadow */
+    outline: none; /* No focus outline */
 }
+
 .toggle-container img {
     width: 30px;
     height: 30px;
-    transition: transform 1s ease, filter 0.7s ease;
+    transition: transform 1s ease, filter 0.7s ease; /* Add transform transition */
 }
+
 .toggle-container:hover img {
     filter: brightness(0.8);
 }
+
+/* Add rotation when dark mode toggles */
 body.dark-mode .toggle-container img {
-    transform: rotate(180deg); /* Rotate 180 degrees on dark toggle */
+    transform: rotate(180deg); /* Rotate 180 degrees */
 }
 
-/*
-   5. HEADER + SIDEBAR + MAIN LAYOUT
-   (The "blue-container" grid layout)
-*/
-.blue-container {
-    display: grid;
-    grid-template-columns: 250px 1fr; /* Sidebar: 250px, Main: auto */
-    grid-template-rows: 60px auto;    /* Header: 60px, then main content */
-    height: 100vh; /* full viewport */
+.btn-add-event {
+    margin-top: 10px;
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                             /* White text */
+    font-size: 1rem;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-/* Header (spans both columns) */
+.btn-add-event:hover {
+    background-color: var(--event-hover-color);
+}
+
+/* Header Styles */
 .blue-header {
     grid-column: 1 / span 2;
     display: flex;
@@ -234,62 +293,37 @@ body.dark-mode .toggle-container img {
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 body.dark-mode .blue-header {
     background-color: var(--dark-header-bg-color);
-    color: #eaeaea;
-}
-.header-left h1 {
-    margin: 0;
-    font-size: 1.4rem;
-}
-.header-right {
-    display: flex;
-    align-items: center;
-}
-.header-right span {
-    margin-right: 1rem;
-    font-weight: 500;
-}
-.header-right button {
-    background-color: var(--primary-color);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.header-right button:hover {
-    background-color: var(--event-hover-color);
-}
-body.dark-mode .header-right button {
-    background-color: var(--primary-color);
-    color: #fff;
-}
-body.dark-mode .header-right button:hover {
-    background-color: var(--dark-event-hover-color);
+    color: #eaeaea; /* Greyish white text */
 }
 
-/* Sidebar (left) */
+/* Sidebar Styles */
 .blue-sidebar {
     grid-row: 2;
-    grid-column: 1;
+    grid-column: 1; /* Sidebar in column 1 */
     background-color: var(--secondary-color);
     color: var(--text-color);
     padding: 20px;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 body.dark-mode .blue-sidebar {
     background-color: var(--dark-secondary-color);
-    color: #eaeaea;
+    color: #eaeaea; /* Greyish white text */
 }
+
 .blue-sidebar h3 {
     margin-top: 0;
 }
+
 .blue-sidebar ul {
     list-style: none;
     margin: 0;
     padding: 0;
 }
+
 .blue-sidebar li {
     padding: 8px;
     margin-bottom: 5px;
@@ -298,8 +332,9 @@ body.dark-mode .blue-sidebar {
     cursor: pointer;
     transition: background-color 0.3s ease;
     position: relative;
-    padding-left: 30px; /* space for color indicator */
+    padding-left: 30px; /* Space for color indicator */
 }
+
 .blue-sidebar li::before {
     content: '';
     position: absolute;
@@ -309,24 +344,28 @@ body.dark-mode .blue-sidebar {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: var(--event-color); /* color indicator based on event color var */
+    background-color: var(--event-color); /* Use event color as indicator */
 }
+
 .blue-sidebar li:hover {
     background-color: #e5e7eb;
 }
+
 body.dark-mode .blue-sidebar li:hover {
-    background-color: #333333;
+    background-color: #333333; /* Dark mode: darker background */
 }
+
 .blue-sidebar li.active {
     border-left: 4px solid var(--primary-color);
     font-weight: 600;
-    background-color: #dbeafe; /* Light highlight */
-}
-body.dark-mode .blue-sidebar li.active {
-    background-color: var(--dark-primary-color);
+    background-color: #dbeafe; /* Light blue highlight */
 }
 
-/* Sidebar buttons container */
+body.dark-mode .blue-sidebar li.active {
+    background-color: var(--dark-primary-color); /* Dark mode: blue highlight */
+}
+
+/* Buttons Section Styles */
 .sidebar-buttons {
     display: flex;
     flex-direction: column;
@@ -334,26 +373,26 @@ body.dark-mode .blue-sidebar li.active {
     margin-top: 20px;
 }
 
-/*
-   6. MAIN CONTENT AREA (right)
-*/
+/*old button style here*/
+
+
+/* Main Content Area */
 .blue-main {
     grid-row: 2;
-    grid-column: 2;
+    grid-column: 2; /* Main content in column 2 */
     background-color: var(--bg-color);
     color: var(--text-color);
     padding: 20px;
     overflow-y: auto;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 body.dark-mode .blue-main {
     background-color: var(--dark-bg-color);
-    color: #eaeaea;
+    color: #eaeaea; /* Greyish white text */
 }
 
-/*
-   7. PERSONAL CALENDAR STYLES
-*/
+/* Calendar Container */
 .personal-calendar {
     background: var(--bg-color);
     border-radius: 12px;
@@ -361,10 +400,12 @@ body.dark-mode .blue-main {
     padding: 20px;
     transition: background 0.3s ease, color 0.3s ease;
 }
+
 body.dark-mode .personal-calendar {
     background-color: var(--dark-bg-color);
     color: #eaeaea;
 }
+
 .personal-calendar h2 {
     color: var(--primary-color);
     font-size: 1.8rem;
@@ -372,13 +413,12 @@ body.dark-mode .personal-calendar {
     margin-bottom: 15px;
     transition: color 0.3s ease;
 }
+
 body.dark-mode .personal-calendar h2 {
     color: #eaeaea;
 }
 
-/*
-   8. MODALS + FORMS
-*/
+/* Modal Backdrop */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -391,6 +431,8 @@ body.dark-mode .personal-calendar h2 {
     justify-content: center;
     z-index: 9999;
 }
+
+/* Modal Content */
 .modal-content {
     background: #ffffff;
     color: var(--text-color);
@@ -401,10 +443,12 @@ body.dark-mode .personal-calendar h2 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 body.dark-mode .modal-content {
     background-color: var(--dark-secondary-color);
     color: #eaeaea;
 }
+
 /* Modal Header */
 .modal-content h3 {
     font-size: 1.5rem;
@@ -415,13 +459,16 @@ body.dark-mode .modal-content {
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 10px;
 }
+
 body.dark-mode .modal-content h3 {
     color: #eaeaea;
 }
-/* Form styles */
+
+/* Form Styles */
 .form-group {
     margin-bottom: 15px;
 }
+
 .form-group label {
     font-weight: bold;
     font-size: 0.95rem;
@@ -429,9 +476,11 @@ body.dark-mode .modal-content h3 {
     display: block;
     margin-bottom: 5px;
 }
+
 body.dark-mode .form-group label {
     color: #eaeaea;
 }
+
 .form-group input,
 .form-group textarea {
     width: 100%;
@@ -442,14 +491,16 @@ body.dark-mode .form-group label {
     outline: none;
     transition: border-color 0.2s;
 }
+
 .form-group input:focus,
 .form-group textarea:focus {
     border-color: var(--primary-color);
 }
+
 /* Modal Buttons */
 .modal-content button {
-    background-color: var(--primary-color);
-    color: #fff;
+    background-color: var(--primary-color); /* Theme primary color */
+    color: #fff;                            /* White text */
     border: none;
     padding: 10px 16px;
     border-radius: 4px;
@@ -459,17 +510,21 @@ body.dark-mode .form-group label {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
 .modal-content button:hover {
     background-color: var(--event-hover-color);
 }
+
 .modal-content button.btn-cancel {
-    background-color: #f3f4f6;
-    color: #333333;
+    background-color: #f3f4f6;            /* Light grey background */
+    color: #333333;                        /* Dark text */
 }
+
 .modal-content button.btn-cancel:hover {
-    background-color: #ddd;
+    background-color: #ddd;                /* Darker grey on hover */
 }
-/* Align modal buttons */
+
+/* Align Buttons in Modal */
 .modal-content .modal-buttons {
     display: flex;
     justify-content: center;
@@ -487,9 +542,11 @@ body.dark-mode .form-group label {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
 .btn-submit:hover {
     background-color: var(--event-hover-color);
 }
+
 .btn-cancel {
     background-color: #ddd;
     border: none;
@@ -497,18 +554,17 @@ body.dark-mode .form-group label {
     border-radius: 4px;
     cursor: pointer;
 }
+
 body.dark-mode .btn-cancel {
     background-color: #555555; /* Darker grey in dark mode */
     color: #fff;
 }
+
 body.dark-mode .btn-cancel:hover {
     background-color: #777777;
 }
 
-/*
-   9. VUECAL THEME OVERRIDES
-   (the “vuecal--blue-theme” is the base in your code)
-*/
+/* VueCal Customizations */
 .vuecal--blue-theme {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     border-radius: 12px;
@@ -517,7 +573,6 @@ body.dark-mode .btn-cancel:hover {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Basic header / menu / title bar backgrounds for any .theme-xxx usage */
 .theme-blue .vuecal--blue-theme .vuecal__header,
 .theme-pink .vuecal--blue-theme .vuecal__header,
 .theme-green .vuecal--blue-theme .vuecal__header,
@@ -525,9 +580,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red .vuecal--blue-theme .vuecal__header,
 .theme-purple .vuecal--blue-theme .vuecal__header,
 .theme-orange .vuecal--blue-theme .vuecal__header {
-    background-color: var(--primary-color);
+    background-color: var(--header-bg-color);
     color: var(--text-color);
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__header,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__header,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__header,
@@ -535,11 +591,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red.dark-mode .vuecal--blue-theme .vuecal__header,
 .theme-purple.dark-mode .vuecal--blue-theme .vuecal__header,
 .theme-orange.dark-mode .vuecal--blue-theme .vuecal__header {
-    background-color: var(--primary-color);
+    background-color: var(--header-bg-color);
     color: var(--text-color);
 }
 
-/* Same logic for .vuecal__menu */
 .theme-blue .vuecal--blue-theme .vuecal__menu,
 .theme-pink .vuecal--blue-theme .vuecal__menu,
 .theme-green .vuecal--blue-theme .vuecal__menu,
@@ -547,9 +602,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red .vuecal--blue-theme .vuecal__menu,
 .theme-purple .vuecal--blue-theme .vuecal__menu,
 .theme-orange .vuecal--blue-theme .vuecal__menu {
-    background-color: var(--primary-color);
+    background-color: var(--header-bg-color);
     color: var(--text-color);
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__menu,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__menu,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__menu,
@@ -557,11 +613,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red.dark-mode .vuecal--blue-theme .vuecal__menu,
 .theme-purple.dark-mode .vuecal--blue-theme .vuecal__menu,
 .theme-orange.dark-mode .vuecal--blue-theme .vuecal__menu {
-    background-color: var(--primary-color);
+    background-color: var(--header-bg-color);
     color: var(--text-color);
 }
 
-/* Same logic for .vuecal__title-bar */
 .theme-blue .vuecal--blue-theme .vuecal__title-bar,
 .theme-pink .vuecal--blue-theme .vuecal__title-bar,
 .theme-green .vuecal--blue-theme .vuecal__title-bar,
@@ -569,9 +624,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red .vuecal--blue-theme .vuecal__title-bar,
 .theme-purple .vuecal--blue-theme .vuecal__title-bar,
 .theme-orange .vuecal--blue-theme .vuecal__title-bar {
-    background-color: var(--primary-color);
+    background-color: var(--header-bg-color);
     color: var(--text-color);
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__title-bar,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__title-bar,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__title-bar,
@@ -579,11 +635,10 @@ body.dark-mode .btn-cancel:hover {
 .theme-red.dark-mode .vuecal--blue-theme .vuecal__title-bar,
 .theme-purple.dark-mode .vuecal--blue-theme .vuecal__title-bar,
 .theme-orange.dark-mode .vuecal--blue-theme .vuecal__title-bar {
-    background-color: var(--primary-color);
-    color: var(--primary-color);
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
 }
 
-/* .vuecal__weekdays area */
 .theme-blue .vuecal--blue-theme .vuecal__weekdays,
 .theme-pink .vuecal--blue-theme .vuecal__weekdays,
 .theme-green .vuecal--blue-theme .vuecal__weekdays,
@@ -594,6 +649,7 @@ body.dark-mode .btn-cancel:hover {
     background-color: var(--secondary-color);
     color: var(--text-color);
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__weekdays,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__weekdays,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__weekdays,
@@ -605,7 +661,6 @@ body.dark-mode .btn-cancel:hover {
     color: #eaeaea;
 }
 
-/* .vuecal__event styling across themes */
 .theme-blue .vuecal--blue-theme .vuecal__event,
 .theme-pink .vuecal--blue-theme .vuecal__event,
 .theme-green .vuecal--blue-theme .vuecal__event,
@@ -614,11 +669,12 @@ body.dark-mode .btn-cancel:hover {
 .theme-purple .vuecal--blue-theme .vuecal__event,
 .theme-orange .vuecal--blue-theme .vuecal__event {
     background-color: var(--event-color);
-    color: var(--event-color);
+    color: #ffffff; /* Event text white */
     border: 1px solid var(--event-hover-color);
     border-radius: 6px;
     transition: background-color 0.3s ease;
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__event,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__event,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__event,
@@ -626,10 +682,11 @@ body.dark-mode .btn-cancel:hover {
 .theme-red.dark-mode .vuecal--blue-theme .vuecal__event,
 .theme-purple.dark-mode .vuecal--blue-theme .vuecal__event,
 .theme-orange.dark-mode .vuecal--blue-theme .vuecal__event {
-    background-color: var(--event-color);
-    color: #ffffff;
+    background-color: var(--dark-event-color);
+    color: #ffffff; /* Event text remains white */
     border: 1px solid var(--dark-event-hover-color);
 }
+
 .theme-blue .vuecal--blue-theme .vuecal__event:hover,
 .theme-pink .vuecal--blue-theme .vuecal__event:hover,
 .theme-green .vuecal--blue-theme .vuecal__event:hover,
@@ -639,6 +696,7 @@ body.dark-mode .btn-cancel:hover {
 .theme-orange .vuecal--blue-theme .vuecal__event:hover {
     background-color: var(--event-hover-color);
 }
+
 .theme-blue.dark-mode .vuecal--blue-theme .vuecal__event:hover,
 .theme-pink.dark-mode .vuecal--blue-theme .vuecal__event:hover,
 .theme-green.dark-mode .vuecal--blue-theme .vuecal__event:hover,
@@ -646,102 +704,59 @@ body.dark-mode .btn-cancel:hover {
 .theme-red.dark-mode .vuecal--blue-theme .vuecal__event:hover,
 .theme-purple.dark-mode .vuecal--blue-theme .vuecal__event:hover,
 .theme-orange.dark-mode .vuecal--blue-theme .vuecal__event:hover {
-    background-color: var(--event-color);
+    background-color: var(--dark-event-hover-color);
 }
 
-/*
-   10. NAVIGATION STYLES
-   (Ensures navigation links are styled appropriately within the sidebar)
-*/
-
-/* Sidebar Navigation Links */
-.blue-sidebar ul li a {
-    display: block;
-    color: var(--text-color);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: color 0.3s ease, background-color 0.3s ease;
-}
-body.dark-mode .blue-sidebar ul li a {
-    color: #eaeaea;
-}
-.blue-sidebar ul li a:hover {
-    color: var(--primary-color);
-    /* Optional: Add underline or other effects */
-}
-body.dark-mode .blue-sidebar ul li a:hover {
-    color: var(--primary-color);
+/* Calendar Container */
+.blue-container {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Sidebar: 250px, Main: auto */
+    grid-template-rows: 60px auto;    /* Header: 60px, then Main area */
+    height: 100vh;                     /* Full viewport height */
 }
 
-/* Active Navigation Link */
-.blue-sidebar ul li.active a {
-    color: #fff;
-    background-color: var(--primary-color);
-    border-radius: 4px;
-}
-body.dark-mode .blue-sidebar ul li.active a {
-    background-color: var(--dark-primary-color);
+.header-left h1 {
+    margin: 0;
+    font-size: 1.4rem;
 }
 
-/* Additional Navigation Styling (if needed) */
-
-/* If you have a top navigation bar, add styles below */
-.top-navigation {
+.header-right {
     display: flex;
     align-items: center;
-    padding: 0 20px;
-    background-color: var(--header-bg-color);
-    color: var(--text-color);
-    height: 60px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-body.dark-mode .top-navigation {
-    background-color: var(--dark-header-bg-color);
-    color: #eaeaea;
-}
-.top-navigation ul {
-    list-style: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
-}
-.top-navigation ul li {
-    margin-right: 20px;
-    position: relative;
-}
-.top-navigation ul li a {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-body.dark-mode .top-navigation ul li a {
-    color: #eaeaea;
-}
-.top-navigation ul li a:hover {
-    color: var(--primary-color);
-}
-.top-navigation ul li.active a {
-    color: #fff;
-    background-color: var(--primary-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-}
-body.dark-mode .top-navigation ul li.active a {
-    background-color: var(--dark-primary-color);
 }
 
-/* Responsive Navigation (Optional) */
-@media (max-width: 768px) {
-    .blue-container {
-        grid-template-columns: 1fr; /* Sidebar collapses */
-        grid-template-rows: 60px auto; /* Header and then main content */
-    }
-    .blue-sidebar {
-        display: none; /* Hide sidebar on small screens */
-    }
-    .blue-header {
-        justify-content: space-between;
-    }
-    /* Add hamburger menu styles if implementing a responsive menu */
+.header-right span {
+    margin-right: 1rem;
+    font-weight: 500;
 }
+
+.header-right button {
+    background-color: var(--primary-color); /* Blue background */
+    color: #fff;                            /* White text */
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.header-right button:hover {
+    background-color: var(--event-hover-color);
+}
+
+body.dark-mode .header-right button {
+    background-color: var(--primary-color); /* Dark mode: same blue background */
+    color: #fff;                            /* White text */
+}
+
+body.dark-mode .header-right button:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Error Message */
+.error {
+    color: red;
+    margin-top: 10px;
+}
+
+
