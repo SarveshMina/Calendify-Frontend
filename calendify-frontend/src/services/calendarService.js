@@ -23,11 +23,6 @@ const deleteEvent = (calendarId, eventId, userId) => {
     );
 };
 
-/**
- * UPDATE an event
- * PUT /calendar/{calendarId}/event/{eventId}/update
- * Body: { userId, title, startTime, endTime, description }
- */
 const updateEvent = (calendarId, eventId, updateData) => {
     return axios.put(
         `${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/update`,
@@ -35,11 +30,6 @@ const updateEvent = (calendarId, eventId, updateData) => {
     );
 };
 
-/**
- * Create a personal calendar
- * POST /personal-calendar/create
- * Body: { userId, name }
- */
 const createPersonalCalendar = (userId, name) => {
     return axios.post(`${BACKEND_ENDPOINT}/personal-calendar/create`, {
         userId,
@@ -47,12 +37,19 @@ const createPersonalCalendar = (userId, name) => {
     });
 };
 
-/**
- * Get all calendars for this user
- * GET /user/{userId}/calendars
- */
 const getUserCalendars = (userId) => {
     return axios.get(`${BACKEND_ENDPOINT}/user/${userId}/calendars`);
+};
+
+/**
+ * Delete a personal calendar
+ * POST /personal-calendar/{calendar_id}/delete
+ * Body: { userId }
+ */
+const deletePersonalCalendar = (calendarId, userId) => {
+    return axios.post(`${BACKEND_ENDPOINT}/personal-calendar/${calendarId}/delete`, {
+        userId,
+    });
 };
 
 export default {
@@ -62,4 +59,5 @@ export default {
     updateEvent,
     getUserCalendars,
     createPersonalCalendar,
+    deletePersonalCalendar, // Added deletePersonalCalendar
 };
