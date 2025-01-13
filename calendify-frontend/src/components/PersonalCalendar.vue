@@ -113,9 +113,7 @@
           </div>
 
           <button type="submit" class="btn-submit">Save Changes</button>
-          <button type="button" class="btn-cancel" @click="closeEditModal">
-            Cancel
-          </button>
+          <button type="button" class="btn-cancel" @click="closeEditModal">Cancel</button>
         </form>
       </div>
     </div>
@@ -131,28 +129,41 @@
         @cancel="closeConfirmDeleteModal"
     />
 
+    <!-- Conflict Modal -->
+    <ConflictModal
+        :visible="showConflictModal"
+        :message="conflictMessage"
+        @close="closeConflictModal"
+        @proceed="handleConflictProceed"
+    />
+
     <!-- Display any error messages -->
     <div v-if="error" class="error">{{ error }}</div>
   </div>
 </template>
 
 <script>
-// Import necessary helpers and components
-import { mapActions } from 'vuex'; // Ensure mapActions is imported
+import { mapActions } from 'vuex';
 import axios from 'axios';
 import VueCal from 'vue-cal';
 import 'vue-cal/dist/vuecal.css';
-import ConfirmationModal from '@/components/ConfirmationModal.vue'; // Ensure correct path
+import ConfirmationModal from '@/components/ConfirmationModal.vue';
+import ConflictModal from '@/components/ConflictModal.vue';
 import '@/assets/styles/styles.css';
+
+// Adjust the path below to match where you actually placed `urlBuilder.js`
+import { buildFunctionUrl } from '@/services/urlBuilder';
+
+import calendarService from '@/services/calendarService';
 
 export default {
   name: 'PersonalCalendar',
-  components: { VueCal, ConfirmationModal },
+  components: { VueCal, ConfirmationModal, ConflictModal },
   props: {
     userId: { type: String, required: true },
     calendarId: { type: String, required: true },
     calendarName: { type: String, default: 'My Personal Calendar' },
-    calendarColor: { type: String, default: 'blue' }, // Added prop for color
+    calendarColor: { type: String, default: 'blue' },
   },
   data() {
     return {
@@ -168,6 +179,8 @@ export default {
       newEventStart: '',
       newEventEnd: '',
       newEventDescription: '',
+      showConflictModal: false,
+      conflictMessage: '',
 
       // Event Information modal
       showDetailModal: false,
@@ -193,7 +206,7 @@ export default {
         this.fetchEvents();
       }
     },
-    calendarColor() { // Removed newColor and oldColor parameters
+    calendarColor() {
       // Update VueCal theme when calendar color changes
       this.calendarColorKey++;
     },
@@ -202,15 +215,19 @@ export default {
     calendarThemeClass() {
       return `theme-${this.calendarColor}`;
     },
+    isDarkMode() {
+      // If you have a global or parent darkMode variable, handle it; otherwise:
+      return false;
+    },
   },
   methods: {
-    ...mapActions(['notify']), // Ensure mapActions is mapped
+    ...mapActions(['notify', 'fetchAllEvents']),
 
     // Load events from the backend
     async fetchEvents() {
       try {
         const res = await axios.get(
-            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/events`,
+            buildFunctionUrl(`/calendar/${this.calendarId}/events`),
             { params: { userId: this.userId } }
         );
         const events = res.data.events || [];
@@ -241,7 +258,7 @@ export default {
       return `${y}-${m}-${day} ${hh}:${mm}`;
     },
 
-    // Convert Date obj to "YYYY-MM-DDTHH:mm" for <input type="datetime-local">
+    // Convert Date obj to "YYYY-MM-DDTHH:mm"
     toLocalDateTime(dateObj) {
       if (!(dateObj instanceof Date)) return '';
       const y = dateObj.getFullYear();
@@ -267,7 +284,6 @@ export default {
       this.showAddEventModal = false;
     },
 
-    // Create event
     async createEvent() {
       try {
         const payload = {
@@ -277,17 +293,61 @@ export default {
           endTime: this.newEventEnd,
           description: this.newEventDescription,
         };
-        await axios.post(
-            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event`,
-            payload
-        );
-        this.fetchEvents();
-        this.closeAddEventModal();
+        // POST to /calendar/{this.calendarId}/event without override
+        await calendarService.addEvent(this.calendarId, payload);
+
+        // Refresh the store’s all events
+        await this.fetchAllEvents();
+
         this.notify({ type: 'success', message: 'Event created successfully.' });
+        this.closeAddEventModal();
       } catch (err) {
-        this.error = err?.response?.data?.error || 'Failed to create event.';
-        this.notify({ type: 'error', message: this.error });
+        if (err.response && err.response.status === 409) {
+          // Conflict detected
+          this.conflictMessage = err.response.data.error || 'There was a conflict while creating the event.';
+          this.showConflictModal = true;
+        } else {
+          const errorMsg = err?.response?.data?.error || 'Failed to create event.';
+          this.notify({
+            type: 'error',
+            message: `<div>${errorMsg.replace(/\n/g, '<br>')}</div>`,
+          });
+        }
       }
+    },
+
+    async handleConflictProceed() {
+      try {
+        const payload = {
+          userId: this.userId,
+          title: this.newEventTitle,
+          startTime: this.newEventStart,
+          endTime: this.newEventEnd,
+          description: this.newEventDescription,
+        };
+        // POST to /calendar/{this.calendarId}/event with override
+        await calendarService.addEvent(this.calendarId, payload, true);
+
+        // Refresh the store’s all events
+        await this.fetchAllEvents();
+
+        this.notify({
+          type: 'success',
+          message: 'Event created successfully despite conflicts.',
+        });
+        this.closeAddEventModal();
+        this.closeConflictModal();
+      } catch (err) {
+        const errorMsg = err?.response?.data?.error || 'Failed to create event with override.';
+        this.notify({
+          type: 'error',
+          message: `<div>${errorMsg.replace(/\n/g, '<br>')}</div>`,
+        });
+      }
+    },
+    closeConflictModal() {
+      this.showConflictModal = false;
+      this.conflictMessage = '';
     },
 
     // Single-click an event => open the Event Information modal
@@ -337,9 +397,11 @@ export default {
           description: this.editEventDescription,
         };
         await axios.put(
-            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${eventId}/update`,
+            buildFunctionUrl(`/calendar/${this.calendarId}/event/${eventId}/update`),
             payload
         );
+        // Or you could use calendarService.updateEvent(...) to keep it consistent
+
         this.fetchEvents();
         this.closeEditModal();
         this.notify({ type: 'success', message: 'Event updated successfully.' });
@@ -358,12 +420,14 @@ export default {
     },
     async deleteEvent() {
       if (!this.selectedEvent) return;
-      // Replace browser confirm with custom modal
       try {
+        const eventId = this.selectedEvent.id;
         await axios.delete(
-            `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.calendarId}/event/${this.selectedEvent.id}/delete`,
+            buildFunctionUrl(`/calendar/${this.calendarId}/event/${eventId}/delete`),
             { data: { userId: this.userId } }
         );
+        // Or you could use calendarService.deleteEvent(...)
+
         this.fetchEvents();
         // Close detail modal if open
         this.closeDetailModal();
@@ -405,5 +469,5 @@ export default {
 </script>
 
 <style scoped>
-/* No additional styles needed as we're using global styles */
+/* Adjust or remove if you have global styles. */
 </style>

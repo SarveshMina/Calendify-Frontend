@@ -21,7 +21,7 @@
     </button>
 
     <!-- MODAL: ADD EVENT -->
-    <div v-if="showAddEventModal" class="modal-backdrop" @click.self="closeAddEventModal">
+    <div v-if="showAddEventModal" class="modal-backdrop add-event-modal" @click.self="closeAddEventModal">
       <div class="modal-content">
         <h3>Create New Event in Personal Calendar</h3>
         <form @submit.prevent="createEvent">
@@ -88,8 +88,15 @@
       </div>
     </div>
 
+    <!-- Conflict Modal -->
+    <ConflictModal
+        :visible="showConflictModal"
+        :message="conflictMessage"
+        @close="closeConflictModal"
+    />
+
     <!-- MODAL: Event Info (read-only for now) -->
-    <div v-if="showDetailModal && selectedEvent" class="modal-backdrop" @click.self="closeDetailModal">
+    <div v-if="showDetailModal && selectedEvent" class="modal-backdrop event-info-modal" @click.self="closeDetailModal">
       <div class="modal-content">
         <h3>Event Information</h3>
         <p><strong>Title:</strong> {{ selectedEvent.title }}</p>
@@ -110,10 +117,12 @@
 import VueCal from 'vue-cal';
 import 'vue-cal/dist/vuecal.css';
 import { mapGetters, mapActions } from 'vuex';
+import ConflictModal from "@/components/ConflictModal.vue";
+import calendarService from '@/services/calendarService'; // Ensure correct import
 
 export default {
   name: 'HomeCalendar',
-  components: { VueCal },
+  components: { ConflictModal, VueCal },
   props: {
     userId: { type: String, required: true },
     calendarColor: { type: String, default: 'blue' },
@@ -131,6 +140,8 @@ export default {
       newEventEnd: '',
       newEventDescription: '',
       chosenCalendarId: '', // which personal calendar to add the event to
+      showConflictModal: false,
+      conflictMessage: '',
     };
   },
   watch: {
@@ -151,6 +162,11 @@ export default {
         calendarId: ev.calendarId,
       }));
     },
+    // Filter out only group calendars (isGroup === true)
+    groupCalendars() {
+      if (!this.calendars) return [];
+      return this.calendars.filter((c) => c.isGroup === true);
+    },
     // Filter out only personal calendars (isGroup === false)
     personalCalendars() {
       if (!this.calendars) return [];
@@ -165,15 +181,8 @@ export default {
     },
   },
   mounted() {
-    // Initialize chosenCalendarId to defaultCalendarId if present and is personal.
-    const defaultCal = this.personalCalendars.find(
-        (c) => c.calendarId === this.defaultCalendarId
-    );
-    if (defaultCal) {
-      // If the user's default is personal, use that
-      this.chosenCalendarId = defaultCal.calendarId;
-    } else if (this.personalCalendars.length > 0) {
-      // Otherwise, pick the first personal calendar
+    // Initialize chosenCalendarId to first personal calendar
+    if (this.personalCalendars.length > 0) {
       this.chosenCalendarId = this.personalCalendars[0].calendarId;
     }
   },
@@ -193,6 +202,10 @@ export default {
 
     // "Add Event" modal
     openAddEventModal() {
+      if (!this.chosenCalendarId) {
+        this.notify({ type: 'error', message: 'No personal calendar selected.' });
+        return;
+      }
       this.showAddEventModal = true;
       this.newEventTitle = '';
       this.newEventDescription = '';
@@ -202,15 +215,6 @@ export default {
       this.newEventStart = this.toLocalDateTime(now);
       now.setHours(now.getHours() + 1);
       this.newEventEnd = this.toLocalDateTime(now);
-
-      // If user has no personal calendars, handle that scenario
-      if (
-          !this.chosenCalendarId &&
-          this.personalCalendars &&
-          this.personalCalendars.length > 0
-      ) {
-        this.chosenCalendarId = this.personalCalendars[0].calendarId;
-      }
     },
     closeAddEventModal() {
       this.showAddEventModal = false;
@@ -218,11 +222,12 @@ export default {
 
     // CREATE EVENT for chosenCalendarId
     async createEvent() {
+      if (!this.chosenCalendarId) {
+        this.notify({ type: 'error', message: 'Please select a personal calendar to add the event.' });
+        return;
+      }
+
       try {
-        if (!this.chosenCalendarId) {
-          this.notify({ type: 'error', message: 'Please select a personal calendar.' });
-          return;
-        }
         const payload = {
           userId: this.userId,
           title: this.newEventTitle,
@@ -230,9 +235,8 @@ export default {
           endTime: this.newEventEnd,
           description: this.newEventDescription,
         };
-        // POST to /calendar/{this.chosenCalendarId}/event
-        const endpoint = `${process.env.VUE_APP_BACKEND_ENDPOINT}/calendar/${this.chosenCalendarId}/event`;
-        await this.$axios.post(endpoint, payload);
+        // Use calendarService.addEvent
+        await calendarService.addEvent(this.chosenCalendarId, payload);
 
         // Refresh the store’s all events
         await this.fetchAllEvents();
@@ -240,11 +244,23 @@ export default {
         this.notify({ type: 'success', message: 'Event created successfully.' });
         this.closeAddEventModal();
       } catch (err) {
-        const errorMsg = err?.response?.data?.error || 'Failed to create event.';
-        this.notify({ type: 'error', message: errorMsg });
+        if (err.response && err.response.status === 409) {
+          // Conflict detected
+          this.conflictMessage = err.response.data.error || 'There was a conflict while creating the event.';
+          this.showConflictModal = true;
+        } else {
+          const errorMsg = err?.response?.data?.error || 'Failed to create event.';
+          this.notify({
+            type: 'error',
+            message: `<strong>Error:</strong> ${errorMsg.replace(/\n/g, '<br>')}`
+          });
+        }
       }
     },
-
+    closeConflictModal() {
+      this.showConflictModal = false;
+      this.conflictMessage = '';
+    },
     // Format from ISO => "YYYY-MM-DD HH:mm" for VueCal
     formatForVueCal(isoString) {
       if (!isoString) return '';
@@ -352,5 +368,15 @@ export default {
   border-radius: 4px;
   font-size: 0.95rem;
   line-height: 1.4;
+}
+
+/* Add Event modal specific z-index */
+.modal-backdrop.add-event-modal {
+  z-index: 1000; /* Lower than ConflictModal and Event Info Modal */
+}
+
+/* Event Info modal specific z-index */
+.modal-backdrop.event-info-modal {
+  z-index: 1500; /* Between Add Event and ConflictModal */
 }
 </style>

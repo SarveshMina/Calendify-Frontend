@@ -1,19 +1,14 @@
 <template>
   <div :class="['app-container', currentThemeClass]">
     <router-view />
-    <NotificationPopUp />
   </div>
 </template>
 
 <script>
-import NotificationPopUp from '@/components/NotificationPopUp.vue';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'App',
-  components: {
-    NotificationPopUp,
-  },
   computed: {
     ...mapGetters(['activeCalendarColor']),
     currentThemeClass() {

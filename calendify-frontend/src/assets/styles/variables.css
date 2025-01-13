@@ -1,0 +1,26 @@
+/* src/assets/styles/variables.css */
+
+:root {
+    /* Light Mode Colors */
+    --primary-color: #0078d4;           /* Bright Outlook Blue */
+    --primary-hover-color: #005fa3;     /* Darker Blue for Hover */
+    --secondary-color: #eef3fa;         /* Light background */
+    --bg-color: #ffffff;                /* Main background */
+    --text-color: #333333;              /* Dark text */
+    --dynamic-text-color: #333333;      /* Text that changes color */
+    --footer-text-color: #555555;       /* Footer text */
+
+    /* Dark Mode Colors */
+    --dark-bg-color: #1e1e1e;           /* Slightly lighter */
+    --dark-text-color: #eaeaea;         /* Light text (Greyish White) */
+    --dark-footer-text-color: #aaaaaa;  /* Footer text in dark mode */
+
+    /* Dynamic Colors for Text and Buttons */
+    --dynamic-color-1: #ff4e50; /* Red */
+    --dynamic-color-2: #fc913a; /* Orange */
+    --dynamic-color-3: #f9d423; /* Yellow */
+    --dynamic-color-4: #eae374; /* Light Yellow */
+    --dynamic-color-5: #a1ffce; /* Mint */
+    --dynamic-color-6: #faffd1; /* Light Mint */
+    --dynamic-color-7: #ffee93; /* Light Orange */
+}

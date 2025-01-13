@@ -1,3 +1,4 @@
+<!-- src/components/Dashboard.vue -->
 <template>
   <div :class="['blue-container', activeCalendar?.color ? `theme-${activeCalendar.color}` : 'theme-blue']">
     <!-- Header -->
@@ -43,9 +44,8 @@
       </div>
 
       <!-- CREATE PERSONAL CALENDAR MODAL -->
-      <div v-if="showCreateModal" class="modal-backdrop" @click.self="closeCreateModal">
+      <div v-if="showCreateModal" class="modal-backdrop add-event-modal" @click.self="closeCreateModal">
         <div class="modal-content">
-          <!-- Preview text color by mapping to actual hex -->
           <h3 :style="{ color: calColor(selectedColor) }">Create New Personal Calendar</h3>
           <form @submit.prevent="createNewCalendar">
             <div class="form-group">
@@ -90,23 +90,24 @@
               </div>
             </div>
 
-            <!-- Submit button: also uses mapped color for background -->
-            <button
-                type="submit"
-                class="btn-submit"
-                :style="{ backgroundColor: calColor(selectedColor) }"
-            >
-              Create
-            </button>
-            <button type="button" class="btn-cancel" @click="closeCreateModal">Cancel</button>
+            <!-- Submit and Cancel buttons -->
+            <div class="modal-buttons">
+              <button
+                  type="submit"
+                  class="btn-submit"
+                  :style="{ backgroundColor: calColor(selectedColor) }"
+              >
+                Create
+              </button>
+              <button type="button" class="btn-cancel" @click="closeCreateModal">Cancel</button>
+            </div>
           </form>
         </div>
       </div>
 
       <!-- CREATE GROUP CALENDAR MODAL -->
-      <div v-if="showCreateGroupModal" class="modal-backdrop" @click.self="closeCreateGroupModal">
+      <div v-if="showCreateGroupModal" class="modal-backdrop add-event-modal" @click.self="closeCreateGroupModal">
         <div class="modal-content">
-          <!-- Preview text color by mapping to actual hex -->
           <h3 :style="{ color: calColor(groupSelectedColor) }">Create New Group Calendar</h3>
           <form @submit.prevent="createNewGroupCalendar">
             <!-- Group Calendar Name -->
@@ -186,48 +187,147 @@
               <p class="help-text">Max 4 additional members (5 total with you).</p>
             </div>
 
-            <button
-                type="submit"
-                class="btn-submit"
-                :style="{ backgroundColor: calColor(groupSelectedColor) }"
-            >
-              Create Group Calendar
-            </button>
-            <button type="button" class="btn-cancel" @click="closeCreateGroupModal">Cancel</button>
+            <!-- Submit and Cancel buttons -->
+            <div class="modal-buttons">
+              <button
+                  type="submit"
+                  class="btn-submit"
+                  :style="{ backgroundColor: calColor(groupSelectedColor) }"
+              >
+                Create Group Calendar
+              </button>
+              <button type="button" class="btn-cancel" @click="closeCreateGroupModal">Cancel</button>
+            </div>
           </form>
         </div>
       </div>
 
       <!-- VIEW CALENDAR DETAILS MODAL -->
-      <div v-if="showDetailsModal" class="modal-backdrop" @click.self="closeDetailsModal">
+      <div v-if="showDetailsModal" class="modal-backdrop event-info-modal" @click.self="closeDetailsModal">
         <div class="modal-content">
           <h3>Calendar Details</h3>
           <p><strong>Name:</strong> {{ activeCalendar.name }}</p>
-          <p><strong>Owner ID:</strong> {{ activeCalendar.ownerId }}</p>
+          <p><strong>Owner:</strong> {{ getUsername(activeCalendar.ownerId) }}</p>
           <p><strong>Is Group:</strong> {{ activeCalendar.isGroup ? 'Yes' : 'No' }}</p>
-          <p>
-            <strong>Members:</strong>
-            <span v-if="activeCalendar.isGroup && activeCalendar.members.length">
-              {{ activeCalendar.members.join(', ') }}
-            </span>
-            <span v-else>N/A</span>
-          </p>
+
+          <div v-if="activeCalendar.isGroup">
+            <p><strong>Members:</strong></p>
+            <div class="members-container">
+              <div
+                  v-for="(username, index) in activeCalendar.memberUsernames"
+                  :key="index"
+                  class="member-tile"
+                  :style="{ backgroundColor: calColor(activeCalendar.color) }"
+              >
+                <span>{{ username }}</span>
+                <button
+                    v-if="isAdmin && username !== getUsername(userId)"
+                    class="remove-user-btn"
+                    @click="removeUser(username)"
+                    aria-label="Remove User"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button
+                v-if="isAdmin"
+                class="btn-add-user"
+                @click="openAddUserModal"
+            >
+              + Add User
+            </button>
+            <button
+                v-else
+                class="btn-leave-calendar"
+                @click="openLeaveCalendarModal"
+            >
+              Leave Group Calendar
+            </button>
+          </div>
+
           <div class="modal-buttons">
-            <button class="btn-edit" @click="openEditModal">Edit</button>
-            <button class="btn-delete" @click="confirmDeleteCalendar">Delete Calendar</button>
+            <button class="btn-edit" @click="openEditCalendarModal" v-if="isAdmin">Edit</button>
+            <button class="btn-delete" @click="confirmDeleteCalendar" v-if="isAdmin">Delete Calendar</button>
             <button class="btn-cancel" @click="closeDetailsModal">Close</button>
           </div>
         </div>
       </div>
 
-      <!-- EDIT CALENDAR MODAL (Placeholder) -->
-      <div v-if="showEditModal" class="modal-backdrop" @click.self="closeEditModal">
+      <!-- ADD USER MODAL -->
+      <div v-if="showAddUserModal" class="modal-backdrop" @click.self="closeAddUserModal">
         <div class="modal-content">
-          <h3>Edit Calendar</h3>
-          <p>Edit functionality will be available soon.</p>
-          <button class="btn-cancel" @click="closeEditModal">Close</button>
+          <h3>Add User to Calendar</h3>
+          <form @submit.prevent="addUser">
+            <div class="form-group">
+              <label for="addUser">Username:</label>
+              <input
+                  id="addUser"
+                  v-model="newUserToAdd"
+                  required
+                  placeholder="Enter username"
+              />
+            </div>
+            <div class="modal-buttons">
+              <button type="submit" class="btn-submit">Add</button>
+              <button type="button" class="btn-cancel" @click="closeAddUserModal">Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
+
+      <!-- EDIT CALENDAR MODAL -->
+      <div v-if="showEditCalendarModal" class="modal-backdrop" @click.self="closeEditCalendarModal">
+        <div class="modal-content">
+          <h3>Edit Calendar</h3>
+          <form @submit.prevent="editCalendar">
+            <div class="form-group">
+              <label for="editCalendarName">Name:</label>
+              <input
+                  id="editCalendarName"
+                  v-model="editCalendarName"
+                  required
+              />
+            </div>
+            <div class="form-group">
+              <label for="editCalendarColor">Color:</label>
+              <div id="editCalendarColor" class="color-options">
+                <label
+                    v-for="color in availableColors"
+                    :key="color.value"
+                    :style="{ backgroundColor: calColor(color.value) }"
+                    class="color-option"
+                    :class="{ selected: editCalendarColor === color.value }"
+                >
+                  <input
+                      type="radio"
+                      name="editCalendarColor"
+                      :value="color.value"
+                      v-model="editCalendarColor"
+                      required
+                  />
+                  <span class="color-circle"></span>
+                </label>
+              </div>
+            </div>
+            <div class="modal-buttons">
+              <button type="submit" class="btn-submit">Save</button>
+              <button type="button" class="btn-cancel" @click="closeEditCalendarModal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- LEAVE CALENDAR CONFIRMATION MODAL -->
+      <ConfirmationModal
+          :visible="showLeaveCalendarModal"
+          title="Leave Group Calendar"
+          message="Are you sure you want to leave this group calendar? This action cannot be undone until an admin adds you back."
+          confirmText="Leave"
+          cancelText="Cancel"
+          @confirm="leaveGroupCalendar"
+          @cancel="closeLeaveCalendarModal"
+      />
 
       <!-- Confirmation Modal for Deletion -->
       <ConfirmationModal
@@ -259,6 +359,16 @@
         Loading calendar... (activeCalendarId={{ activeCalendarId }}, defaultCalendarId={{ defaultCalendarId }})
       </p>
     </main>
+
+    <!-- Add User Modal -->
+    <!-- Already included above -->
+
+    <!-- Edit Calendar Modal -->
+    <!-- Already included above -->
+
+    <!-- Leave Calendar Confirmation Modal -->
+    <!-- Already included above -->
+
   </div>
 </template>
 
@@ -287,10 +397,19 @@ export default {
       memberUsername: '',
       // For details
       showDetailsModal: false,
-      // For editing calendar (placeholder)
-      showEditModal: false,
+      // For editing calendar
+      showEditCalendarModal: false,
+      editCalendarName: '',
+      editCalendarColor: '',
       // For deletion
       showConfirmDeleteModal: false,
+
+      // For adding users
+      showAddUserModal: false,
+      newUserToAdd: '',
+
+      // For leaving calendar
+      showLeaveCalendarModal: false,
 
       availableColors: [
         { name: 'Pink', value: 'pink' },
@@ -320,6 +439,9 @@ export default {
     },
     activeCalendarColor() {
       return this.activeCalendar ? this.activeCalendar.color : 'blue';
+    },
+    isAdmin() {
+      return this.activeCalendar && this.userId === this.activeCalendar.ownerId;
     }
   },
   mounted() {
@@ -338,21 +460,20 @@ export default {
 
     // Maps color strings (like 'pink') to the actual hex code you want to display
     calColor(color) {
-      if (color === 'pink') {
-        return '#e91e63';
-      } else if (color === 'green') {
-        return '#4caf50';
-      } else if (color === 'yellow') {
-        return '#DFC140';
-      } else if (color === 'red') {
-        return '#f44336';
-      } else if (color === 'purple') {
-        return '#9c27b0';
-      } else if (color === 'orange') {
-        return '#ff9800';
-      }
-      // Default to blue if color value is not recognized
-      return '#0078d4';
+      const colorMap = {
+        'pink': '#e91e63',
+        'green': '#4caf50',
+        'yellow': '#ffc107',
+        'red': '#f44336',
+        'purple': '#9c27b0',
+        'orange': '#ff9800',
+        'blue': '#0078d4'
+      };
+      return colorMap[color] || '#0078d4'; // Default to blue
+    },
+
+    closeConfirmDeleteModal() {
+      this.showConfirmDeleteModal = false;
     },
 
     handleLogout() {
@@ -363,8 +484,10 @@ export default {
     setActiveCalendar(calendarId) {
       this.$store.commit('SET_ACTIVE_CALENDAR_ID', calendarId);
       this.closeDetailsModal();
-      this.closeEditModal();
-      this.closeConfirmDeleteModal();
+      this.closeEditCalendarModal();
+      if (this.closeConfirmDeleteModal) {
+        this.closeConfirmDeleteModal();
+      }
     },
 
     openCreateModal() {
@@ -388,7 +511,8 @@ export default {
         this.notify({ type: 'success', message: 'Personal calendar created successfully.' });
       } catch (err) {
         console.error('Error creating personal calendar:', err);
-        this.notify({ type: 'error', message: 'Failed to create personal calendar.' });
+        const errorMsg = err?.response?.data?.error || 'Failed to create personal calendar.';
+        this.notify({ type: 'error', message: errorMsg });
       }
     },
 
@@ -467,34 +591,170 @@ export default {
       this.showDetailsModal = false;
     },
 
-    openEditModal() {
-      this.showEditModal = true;
-      this.showDetailsModal = false;
+    openAddUserModal() {
+      this.showAddUserModal = true;
+      this.newUserToAdd = '';
     },
-    closeEditModal() {
-      this.showEditModal = false;
+    closeAddUserModal() {
+      this.showAddUserModal = false;
+      this.newUserToAdd = '';
+    },
+    async addUser() {
+      const username = this.newUserToAdd.trim();
+      if (!username) {
+        this.notify({ type: 'error', message: 'Please enter a username.' });
+        return;
+      }
+      try {
+        // Get userId from username
+        const response = await calendarService.getUserId(username);
+        const userId = response.data.userId;
+        if (!userId) {
+          this.notify({ type: 'error', message: `User '${username}' does not exist.` });
+          return;
+        }
+        // Call backend to add user
+        await calendarService.addUserToGroupCalendar(
+            this.activeCalendar.calendarId,
+            this.userId, // adminId
+            userId
+        );
+        this.notify({ type: 'success', message: `User '${username}' added to calendar.` });
+        this.closeAddUserModal();
+        await this.fetchCalendars();
+        this.closeDetailsModal();
+      } catch (err) {
+        console.error('Error adding user:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to add user.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
     },
 
-    confirmDeleteCalendar() {
-      this.showConfirmDeleteModal = true;
+    getUsername(userId) {
+      // Assuming activeCalendar.members and activeCalendar.memberUsernames are aligned
+      // If memberUsernames are included in the calendar data from the backend
+      if (this.activeCalendar && this.activeCalendar.memberUsernames) {
+        const index = this.activeCalendar.members.indexOf(userId);
+        if (index !== -1 && this.activeCalendar.memberUsernames[index]) {
+          return this.activeCalendar.memberUsernames[index];
+        }
+      }
+      return userId; // Fallback to userId
     },
-    closeConfirmDeleteModal() {
-      this.showConfirmDeleteModal = false;
-    },
-    async deleteCalendar() {
-      if (!this.activeCalendar) return;
+
+    async removeUser(username) {
+      // Fetch userId based on username
       try {
-        await calendarService.deletePersonalCalendar(
+        const userId = await this.fetchUserId(username);
+        if (!userId) {
+          this.notify({ type: 'error', message: `User '${username}' does not exist.` });
+          return;
+        }
+        // Call the backend to remove user
+        await calendarService.removeUserFromGroupCalendar(
+            this.activeCalendar.calendarId,
+            this.userId, // adminId
+            userId
+        );
+        this.notify({ type: 'success', message: `User '${username}' removed from calendar.` });
+        await this.fetchCalendars();
+        this.closeDetailsModal();
+      } catch (err) {
+        console.error('Error removing user:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to remove user.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
+    async fetchUserId(username) {
+      try {
+        const response = await calendarService.getUserId(username);
+        return response.data.userId;
+      } catch (err) {
+        console.error('Error fetching userId:', err);
+        return null;
+      }
+    },
+
+    openLeaveCalendarModal() {
+      this.showLeaveCalendarModal = true;
+    },
+    closeLeaveCalendarModal() {
+      this.showLeaveCalendarModal = false;
+    },
+    async leaveGroupCalendar() {
+      try {
+        await calendarService.leaveGroupCalendar(
             this.activeCalendar.calendarId,
             this.userId
         );
+        this.notify({ type: 'success', message: 'You have left the group calendar.' });
+        await this.fetchCalendars();
+        this.closeLeaveCalendarModal();
+        this.closeDetailsModal();
+      } catch (err) {
+        console.error('Error leaving group calendar:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to leave group calendar.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
+    openEditCalendarModal() {
+      this.showEditCalendarModal = true;
+      this.editCalendarName = this.activeCalendar.name;
+      this.editCalendarColor = this.activeCalendar.color;
+    },
+    closeEditCalendarModal() {
+      this.showEditCalendarModal = false;
+      this.editCalendarName = '';
+      this.editCalendarColor = '';
+    },
+    async editCalendar() {
+      try {
+        const updatedData = {
+          name: this.editCalendarName,
+          color: this.editCalendarColor
+        };
+        await calendarService.editGroupCalendar(
+            this.activeCalendar.calendarId,
+            this.userId, // adminId
+            updatedData
+        );
+        this.notify({ type: 'success', message: 'Calendar updated successfully.' });
+        this.closeEditCalendarModal();
+        await this.fetchCalendars();
+        this.closeDetailsModal();
+      } catch (err) {
+        console.error('Error editing calendar:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to edit calendar.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
+    async deleteCalendar() {
+      if (!this.activeCalendar) return;
+      try {
+        if (this.activeCalendar.isGroup) {
+          // Delete group calendar (admin only)
+          await calendarService.deleteGroupCalendar(
+              this.activeCalendar.calendarId,
+              this.userId // adminId
+          );
+        } else {
+          // Delete personal calendar
+          await calendarService.deletePersonalCalendar(
+              this.activeCalendar.calendarId,
+              this.userId
+          );
+        }
         this.notify({ type: 'success', message: 'Calendar deleted successfully.' });
         await this.fetchCalendars();
         this.closeDetailsModal();
         this.closeConfirmDeleteModal();
       } catch (err) {
         console.error('Error deleting calendar:', err);
-        this.notify({ type: 'error', message: 'Failed to delete calendar.' });
+        const errorMsg = err?.response?.data?.error || 'Failed to delete calendar.';
+        this.notify({ type: 'error', message: errorMsg });
       }
     },
 
@@ -507,5 +767,226 @@ export default {
 </script>
 
 <style scoped>
-/* No additional local styles needed if you rely on global styles */
+/* Add necessary styles for member tiles and buttons */
+
+/* Members Container */
+.members-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Member Tile */
+.member-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 20px;
+  color: #fff;
+  min-width: 100px;
+}
+
+/* Remove User Button */
+.remove-user-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 8px;
+  font-size: 1.2rem;
+}
+
+/* Add User Button */
+.btn-add-user {
+  margin-top: 15px;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-add-user:hover {
+  background-color: var(--event-hover-color);
+}
+
+/* Leave Calendar Button */
+.btn-leave-calendar {
+  margin-top: 15px;
+  background-color: #dc3545; /* Red */
+  color: #fff;
+  font-size: 1rem;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-leave-calendar:hover {
+  background-color: #c82333;
+}
+
+/* Color Options */
+.color-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.color-option {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-option.selected {
+  border: 3px solid #000;
+}
+
+.color-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Member Chips */
+.member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+.chip-close {
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+/* Member Input */
+.member-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.member-input input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-submit {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-submit:hover {
+  background-color: var(--event-hover-color);
+}
+
+.btn-cancel {
+  background-color: #6c757d; /* Gray */
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive Modals */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 90%;
+  }
+}
+
+/* Additional Styles for Confirmation Modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500; /* Adjust as needed */
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.members-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.color-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.color-option {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-option.selected {
+  border: 3px solid #000;
+}
+
+.color-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-block;
+}
 </style>

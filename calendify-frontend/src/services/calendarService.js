@@ -1,135 +1,126 @@
 // src/services/calendarService.js
 
 import axios from 'axios';
+import { buildFunctionUrl } from './urlBuilder';
 
-const BACKEND_ENDPOINT = process.env.VUE_APP_BACKEND_ENDPOINT || 'http://localhost:7071';
-
-const getEvents = (calendarId, userId) => {
-    return axios.get(`${BACKEND_ENDPOINT}/calendar/${calendarId}/events`, {
-        params: { userId },
-    });
-};
-
-const addEvent = (calendarId, eventData) => {
-    return axios.post(`${BACKEND_ENDPOINT}/calendar/${calendarId}/event`, eventData);
-};
-
-const deleteEvent = (calendarId, eventId, userId) => {
-    return axios.delete(
-        `${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/delete`,
-        {
-            data: { userId },
-        }
-    );
-};
-
-const updateEvent = (calendarId, eventId, updateData, userId)=> {
-    return axios.put(
-        `${BACKEND_ENDPOINT}/calendar/${calendarId}/event/${eventId}/update`,
-        updateData,
-        { data: { userId } }
-    );
-}
-
-/**
- * Add a User to a Group Calendar
- * POST /group-calendar/{calendar_id}/add-user
- * Body: { adminId, userId }
- */
-const addUserToGroupCalendar = (calendarId, adminId, userId) => {
-    return axios.post(`${BACKEND_ENDPOINT}/group-calendar/${calendarId}/add-user`, {
-        adminId,
-        userId,
-    });
-};
-
-/**
- * Remove a User from a Group Calendar
- * POST /group-calendar/{calendar_id}/remove-user
- * Body: { adminId, userId }
- */
-const removeUserFromGroupCalendar = (calendarId, adminId, userId) => {
-    return axios.post(`${BACKEND_ENDPOINT}/group-calendar/${calendarId}/remove-user`, {
-        adminId,
-        userId,
-    });
-};
-
-/**
- * Get all events for the user across all calendars.
- * GET /user/{user_id}/events
- * Returns { events: [...] }
- */
-function getAllEvents(userId) {
-    // GET /user/{userId}/events => returns { events: [...] }
-    return axios.get(`${BACKEND_ENDPOINT}/user/${userId}/events`);
-}
-
-export default {
-    getEvents,
-    addEvent,
-    deleteEvent,
-    updateEvent,
-
+const calendarService = {
     /**
      * Creates a new personal calendar.
-     * @param {String} userId - The ID of the user creating the calendar.
-     * @param {String} name - The name of the new calendar.
-     * @param {String} color - The color theme of the calendar.
-     * @returns {Promise} Axios response promise.
      */
     async createPersonalCalendar(userId, name, color) {
         const payload = { userId, name, color };
-        return await axios.post(`${BACKEND_ENDPOINT}/personal-calendar/create`, payload);
+        return await axios.post(buildFunctionUrl('/personal-calendar/create'), payload);
     },
 
     /**
      * Deletes a personal calendar.
-     * @param {String} calendarId - The ID of the calendar to delete.
-     * @param {String} userId - The ID of the user requesting deletion.
-     * @returns {Promise} Axios response promise.
      */
     async deletePersonalCalendar(calendarId, userId) {
-        return await axios.delete(`${BACKEND_ENDPOINT}/personal-calendar/${calendarId}/delete`, {
+        return await axios.post(
+            buildFunctionUrl(`/personal-calendar/${calendarId}/delete`),
+            { userId }
+        );
+    },
+
+    /**
+     * Creates a new group calendar.
+     */
+    async createGroupCalendar(ownerId, name, members, color) {
+        const payload = { ownerId, name, members, color };
+        return await axios.post(buildFunctionUrl('/group-calendar/create'), payload);
+    },
+
+    // Edit group calendar (name and color)
+    async editGroupCalendar(calendarId, adminId, updatedData) {
+        return axios.put(buildFunctionUrl(`/group-calendar/${calendarId}/edit`), {
+            adminId,
+            ...updatedData,
+        });
+    },
+
+    // Add user to group calendar
+    async addUserToGroupCalendar(calendarId, adminId, userId) {
+        return axios.post(buildFunctionUrl(`/group-calendar/${calendarId}/add-user`), {
+            adminId,
+            userId,
+        });
+    },
+
+    // Remove user from group calendar
+    async removeUserFromGroupCalendar(calendarId, adminId, userId) {
+        return axios.post(buildFunctionUrl(`/group-calendar/${calendarId}/remove-user`), {
+            adminId,
+            userId,
+        });
+    },
+
+    // Leave group calendar
+    async leaveGroupCalendar(calendarId, userId) {
+        return axios.post(buildFunctionUrl(`/group-calendar/${calendarId}/leave`), {
+            userId,
+        });
+    },
+
+    // Get userId from username
+    async getUserId(username) {
+        return axios.get(buildFunctionUrl(`/user/${username}/id`));
+    },
+
+    /**
+     * Retrieves all calendars for a user.
+     */
+    async getUserCalendars(userId) {
+        return await axios.get(buildFunctionUrl(`/user/${userId}/calendars`));
+    },
+
+    /**
+     * Validates if a username exists and retrieves its userId.
+     */
+    validateUsername(username) {
+        return axios.get(buildFunctionUrl(`/user/${username}/id`));
+    },
+
+    /**
+     * Retrieves all events for a user across all calendars.
+     */
+    async getAllEvents(userId) {
+        return await axios.get(buildFunctionUrl(`/user/${userId}/events`));
+    },
+
+    /**
+     * Fetches all events for a specific calendar.
+     */
+    getEvents(calendarId, userId) {
+        return axios.get(buildFunctionUrl(`/calendar/${calendarId}/events`), {
+            params: { userId },
+        });
+    },
+
+    /**
+     * Adds an event to a specific calendar (with optional conflict override).
+     */
+    addEvent(calendarId, eventData, override = false) {
+        const data = { ...eventData, override };
+        return axios.post(buildFunctionUrl(`/calendar/${calendarId}/event`), data);
+    },
+
+    /**
+     * Deletes an event from a specific calendar.
+     */
+    deleteEvent(calendarId, eventId, userId) {
+        return axios.delete(buildFunctionUrl(`/calendar/${calendarId}/event/${eventId}/delete`), {
             data: { userId },
         });
     },
 
     /**
-     * Creates a new group calendar.
-     * @param {String} ownerId - The ID of the user creating the group calendar.
-     * @param {String} name - The name of the group calendar.
-     * @param {Array} members - Array of member usernames.
-     * @param {String} color - The color theme of the group calendar.
-     * @returns {Promise} Axios response promise.
+     * Updates an event in a specific calendar.
      */
-    async createGroupCalendar(ownerId, name, members, color) {
-        const payload = { ownerId, name, members, color };
-        return await axios.post(`${BACKEND_ENDPOINT}/group-calendar/create`, payload);
+    updateEvent(calendarId, eventId, updateData, userId) {
+        return axios.put(buildFunctionUrl(`/calendar/${calendarId}/event/${eventId}/update`), updateData, {
+            data: { userId },
+        });
     },
-
-    /**
-     * Retrieves all calendars for a user.
-     * @param {String} userId - The ID of the user.
-     * @returns {Promise} Axios response promise.
-     */
-    async getUserCalendars(userId) {
-        return await axios.get(`${BACKEND_ENDPOINT}/user/${userId}/calendars`);
-    },
-
-    /**
-     * Validates if a username exists and retrieves its userId.
-     * @param {String} username - The username to validate.
-     * @returns {Promise} Axios response promise.
-     */
-    validateUsername(username) {
-        // GET /user/{username}/id => returns { userId } or 404
-        return axios.get(`${BACKEND_ENDPOINT}/user/${username}/id`);
-    },
-
-    async getAllEvents(userId) {
-        return await getAllEvents(userId);
-    },
-    addUserToGroupCalendar,            // Added
-    removeUserFromGroupCalendar,       // Added
 };
+
+export default calendarService;
