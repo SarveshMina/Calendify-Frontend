@@ -1,0 +1,324 @@
+/* src/assets/css/auth.css */
+
+/* Ensure these styles are scoped only to AuthLanding */
+.auth-container {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden; /* Prevent scrolling */
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode .auth-container {
+    background-color: var(--dark-bg-color);
+    color: var(--dark-text-color);
+}
+
+/* Responsive Light Blue Gradient Background */
+.auth-container .background-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Light blue gradient that responds to mouse movement */
+    background: linear-gradient(
+            var(--gradient-angle, 45deg),
+            #a1c4fd, /* Light Blue */
+            #c2e9fb  /* Lighter Blue */
+    );
+    transition: background 0.5s ease;
+    z-index: 1;
+}
+
+/* Overlay for content readability */
+.auth-container .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+/* Header Styles */
+.auth-header {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+.auth-header .app-name {
+    font-size: 2.5rem;
+    color: var(--dynamic-text-color); /* Dynamic color */
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: color 0.5s ease;
+}
+
+.auth-header .toggle-container {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.auth-header .toggle-icon {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.3s ease;
+}
+
+.dark-mode .auth-header .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Slogan and Explanation */
+.auth-intro {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 20px 40px;
+}
+
+.auth-intro .slogan {
+    font-size: 2rem;
+    color: var(--dynamic-text-color); /* Dynamic color */
+    margin-bottom: 10px;
+    animation: fadeInDown 1s ease forwards;
+    transition: color 0.5s ease;
+}
+
+.auth-intro .description {
+    font-size: 1.1rem;
+    color: #fff3e0; /* Dynamic color */
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeInUp 1s ease forwards;
+    animation-delay: 0.5s;
+    transition: color 0.5s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Main Authentication Panels */
+.auth-main {
+    position: relative;
+    z-index: 3;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    padding: 40px;
+}
+
+.auth-main .auth-panel {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 30px 40px;
+    border-radius: 15px;
+    /* Remove box-shadow to eliminate borders */
+    box-shadow: none;
+    transition: transform 0.3s ease, background 0.3s ease;
+    width: 350px;
+}
+
+.auth-main .auth-panel:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.auth-main .auth-panel h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--dynamic-text-color); /* Dynamic color */
+    font-size: 1.8rem;
+    font-weight: bold;
+    transition: color 0.5s ease;
+}
+
+.auth-main .auth-panel form {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-main .auth-panel .form-group {
+    margin-bottom: 15px;
+}
+
+.auth-main .auth-panel .auth-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff3e0;
+    font-size: 1rem;
+    outline: none;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.auth-main .auth-panel .auth-input::placeholder {
+    color: #fff3e0;
+    font-weight: 500;
+}
+
+.auth-main .auth-panel .auth-input:focus {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Password Group Styling */
+.password-group {
+    position: relative; /* To position the toggle icon absolutely within the group */
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.3s ease;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+
+/* Add rotation animation for toggle-password when active */
+.toggle-password.rotated {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Dynamic Button Colors */
+.auth-main .auth-panel .btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    /* Remove fixed background color */
+    /* background-color: var(--primary-color); */
+    color: #000; /* Set text color to black for contrast */
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    /* Add animation for background-color */
+    animation: changeButtonColor 30s infinite;
+}
+
+.auth-main .auth-panel .btn:hover {
+    /* Remove background-color hover effect, as background is animated */
+    /* background-color: var(--primary-hover-color); */
+    transform: translateY(-2px);
+}
+
+/* Button Background Color Animation */
+@keyframes changeButtonColor {
+    0% { background-color: #a1c4fd; }    /* Light Blue */
+    20% { background-color: #c2e9fb; }   /* Lighter Blue */
+    40% { background-color: #a1c4fd; }   /* Light Blue */
+    60% { background-color: #c2e9fb; }   /* Lighter Blue */
+    80% { background-color: #a1c4fd; }   /* Light Blue */
+    100% { background-color: #c2e9fb; }  /* Lighter Blue */
+}
+
+/* Error Messages */
+.auth-main .auth-panel .error {
+    color: #ff6b6b;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Footer Styles */
+.auth-footer {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: var(--footer-text-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auth-main {
+        flex-direction: column;
+        gap: 30px;
+        padding: 20px;
+    }
+
+    .auth-main .auth-panel {
+        width: 90%;
+        padding: 25px 30px;
+    }
+
+    .auth-header {
+        padding: 15px 20px;
+    }
+
+    .auth-header .app-name {
+        font-size: 2rem;
+    }
+
+    .auth-intro .slogan {
+        font-size: 1.8rem;
+    }
+
+    .auth-intro .description {
+        font-size: 1rem;
+    }
+}
+
+/* Focus Styles for Accessibility */
+.auth-input:focus, .btn:focus {
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.5);
+}
+
+/* Dynamic Text Color Animations */
+@keyframes changeTextColor {
+    0% { color: var(--dynamic-color-1); }
+    16% { color: var(--dynamic-color-2); }
+    33% { color: var(--dynamic-color-3); }
+    50% { color: var(--dynamic-color-4); }
+    66% { color: var(--dynamic-color-5); }
+    83% { color: var(--dynamic-color-6); }
+    100% { color: var(--dynamic-color-7); }
+}
+
+.auth-header .app-name, .auth-intro .slogan, .auth-main .auth-panel h3 {
+    animation: changeTextColor 30s infinite;
+}

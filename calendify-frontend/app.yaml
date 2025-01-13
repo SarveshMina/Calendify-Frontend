@@ -1,0 +1,22 @@
+runtime: python39
+
+handlers:
+  # Serve JavaScript files
+  - url: /(.*\.js)
+    static_files: dist/\1
+    upload: dist/(.*\.js)
+
+  # Serve CSS files
+  - url: /(.*\.css)
+    static_files: dist/\1
+    upload: dist/(.*\.css)
+
+  # Serve image and font files
+  - url: /(.*\.(png|jpg|jpeg|gif|svg|map|json|ico|woff2))
+    static_files: dist/\1
+    upload: dist/(.*\.(png|jpg|jpeg|gif|svg|map|json|ico|woff2))
+
+  # Catch-all handler to serve index.html for SPA routing
+  - url: /.*
+    static_files: dist/index.html
+    upload: dist/index.html

@@ -1,0 +1,1135 @@
+/* ----------------------------------------------------------------
+   1. ROOT VARIABLES (Default light & dark)
+   These define the base themes as per your setup.
+------------------------------------------------------------------*/
+@import 'vue-cal/dist/vuecal.css'; /* Ensure VueCal base CSS is already imported */
+
+:root {
+    /* Light Mode Colors */
+    --primary-color: #0078d4;          /* Bright Outlook Blue */
+    --secondary-color: #eef3fa;        /* Light background */
+    --bg-color: #ffffff;               /* Main background */
+    --text-color: #333333;             /* Dark text */
+    --header-bg-color: #f3f4f6;        /* Header background */
+    --event-color: #0078d4;            /* Event background */
+    --event-hover-color: #005fa3;      /* Event hover background */
+
+    /* Dark Mode Colors */
+    --dark-primary-color: #1e88e5;     /* Softer Blue */
+    --dark-secondary-color: #121212;    /* Dark background */
+    --dark-bg-color: #1e1e1e;          /* Slightly lighter */
+    --dark-text-color: #eaeaea;        /* Light text (Greyish White) */
+    --dark-header-bg-color: #242424;   /* Dark Header */
+    --dark-event-color: #1e88e5;       /* Dark Mode Event Background */
+    --dark-event-hover-color: #1565c0; /* Dark Mode Event Hover */
+}
+
+.member-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: #0078d4; /* or use var(--primary-color) */
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+.chip-close {
+    cursor: pointer;
+    margin-left: 6px;
+    font-weight: bold;
+}
+.member-input {
+    display: flex;
+    gap: 5px;
+}
+.help-text {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* ----------------------------------------------------------------
+   Color Options Container
+------------------------------------------------------------------*/
+.color-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Each Color Option */
+.color-option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; /* circle */
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, border 0.3s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.color-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.color-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* optional box-shadow or effect */
+}
+
+
+/* ----------------------------------------------------------------
+   2. THEME CLASSES for Pink, Green, Yellow, Red, Purple, Orange.
+   By default, if no theme-xxx class is present, we'll assume "blue".
+------------------------------------------------------------------*/
+
+/* BLUE THEME (Fallback / Default) */
+.theme-blue {
+    --primary-color: #0078d4;
+    --secondary-color: #eef3fa;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #f3f4f6;
+    --event-color: #0078d4;
+    --event-hover-color: #005fa3;
+}
+.theme-blue.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #242424;
+}
+
+/* PINK THEME */
+.theme-pink {
+    --primary-color: #e91e63;
+    --secondary-color: #ffe0f0;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #ffe0f0;
+    --event-color: #e91e63;
+    --event-hover-color: #c2185b;
+}
+.theme-pink.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #ffe0f0;
+}
+
+/* GREEN THEME */
+.theme-green {
+    --primary-color: #4caf50;
+    --secondary-color: #e8f5e9;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #e8f5e9;
+    --event-color: #4caf50;
+    --event-hover-color: #388e3c;
+}
+.theme-green.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #e8f5e9;
+}
+
+/* YELLOW THEME */
+.theme-yellow {
+    --primary-color: #DFC140;
+    --secondary-color: #fffde7;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #fffde7;
+    --event-color: #ffeb3b;
+    --event-hover-color: #fbc02d;
+}
+.theme-yellow.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #fffde7;
+}
+
+/* RED THEME */
+.theme-red {
+    --primary-color: #f44336;
+    --secondary-color: #ffebee;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #ffebee;
+    --event-color: #f44336;
+    --event-hover-color: #d32f2f;
+}
+.theme-red.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #ffebee;
+}
+
+/* PURPLE THEME */
+.theme-purple {
+    --primary-color: #9c27b0;
+    --secondary-color: #f3e5f5;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #f3e5f5;
+    --event-color: #9c27b0;
+    --event-hover-color: #7b1fa2;
+}
+.theme-purple.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #f3e5f5;
+}
+
+/* ORANGE THEME */
+.theme-orange {
+    --primary-color: #ff9800;
+    --secondary-color: #fff3e0;
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --header-bg-color: #fff3e0;
+    --event-color: #ff9800;
+    --event-hover-color: #fb8c00;
+}
+.theme-orange.dark-mode {
+    --bg-color: #1e1e1e;
+    --text-color: #eaeaea;
+    --header-bg-color: #fff3e0;
+}
+
+/* ----------------------------------------------------------------
+   3. GLOBAL BODY STYLES + DARK MODE
+------------------------------------------------------------------*/
+body {
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+}
+body.dark-mode {
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+/* Exclude Buttons from text color changes in dark mode */
+body.dark-mode button {
+    color: #fff;
+    background-color: var(--primary-color);
+}
+body.dark-mode button:hover {
+    background-color: var(--event-hover-color);
+}
+
+/* ----------------------------------------------------------------
+   4. BASE BUTTONS + TOGGLE, etc.
+------------------------------------------------------------------*/
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    color: #fff;
+    background-color: var(--primary-color);
+}
+button:hover {
+    background-color: var(--event-hover-color);
+}
+
+/* Dark Mode Toggle Container */
+.toggle-container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+}
+.toggle-container img {
+    width: 30px;
+    height: 30px;
+    transition: transform 1s ease, filter 0.7s ease;
+}
+.toggle-container:hover img {
+    filter: brightness(0.8);
+}
+body.dark-mode .toggle-container img {
+    transform: rotate(180deg);
+}
+
+/* ----------------------------------------------------------------
+   5. HEADER + SIDEBAR + MAIN LAYOUT
+------------------------------------------------------------------*/
+.blue-container {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Sidebar: 250px, Main: auto */
+    grid-template-rows: 60px auto;    /* Header: 60px, then main content */
+    height: 100vh; /* full viewport */
+}
+
+/* Header (spans both columns) */
+.blue-header {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+body.dark-mode .blue-header {
+    background-color: var(--dark-header-bg-color);
+    color: #eaeaea;
+}
+.header-left h1 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+}
+.header-right span {
+    margin-right: 1rem;
+    font-weight: 500;
+}
+.header-right button {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.header-right button:hover {
+    background-color: var(--event-hover-color);
+}
+body.dark-mode .header-right button {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+body.dark-mode .header-right button:hover {
+    background-color: var(--dark-event-hover-color);
+}
+
+/* Sidebar (left) */
+.blue-sidebar {
+    grid-row: 2;
+    grid-column: 1;
+    background-color: var(--secondary-color);
+    color: #fff; /* Default text color for sidebar items */
+    padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+body.dark-mode .blue-sidebar {
+    background-color: var(--dark-secondary-color);
+    color: #eaeaea;
+}
+
+/* Ensure "Your Calendars" always uses primary color */
+.blue-sidebar h3 {
+    margin-top: 0;
+    color: var(--primary-color); /* Use primary color for this heading */
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Sidebar calendar list items */
+.blue-sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.blue-sidebar li {
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: var(--secondary-color);
+    border-radius: 4px;
+    cursor: pointer;
+    color: #1e1e1e;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    position: relative;
+    padding-left: 30px; /* Space for color indicator */
+}
+
+.body.dark-mode .blue-sidebar li {
+    background-color: var(--secondary-color);
+}
+
+
+body.dark-mode .blue-sidebar {
+    background-color: #1e1e1e;
+    color: #1e1e1e;
+}
+
+.blue-sidebar li::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--cal-indicator);
+}
+
+.blue-sidebar li:hover {
+    color: #1e1e1e; /* Text color on hover */
+    background-color: #e5e7eb;
+}
+body.dark-mode .blue-sidebar li:hover {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+/* Active calendar in the sidebar */
+.blue-sidebar li.active {
+    border-left: 4px solid var(--primary-color);
+    font-weight: 600;
+    background-color: #dbeafe;
+    color: #333333; /* Keep text black for the active calendar in light mode */
+}
+body.dark-mode .blue-sidebar li.active {
+    background-color: var(--dark-secondary-color);
+    color: #fff; /* Keep active calendar text light in dark mode */
+}
+
+/* Ensure "Welcome to Calendify" and "User ID" always use primary color */
+.blue-header h1 {
+    color: var(--primary-color); /* Set text to primary color */
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: bold;
+}
+.header-right span {
+    color: var(--primary-color); /* User ID in primary color */
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+/* Sidebar buttons container */
+.sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* ----------------------------------------------------------------
+   6. MAIN CONTENT AREA (right)
+------------------------------------------------------------------*/
+.blue-main {
+    grid-row: 2;
+    grid-column: 2;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 20px;
+    overflow-y: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+body.dark-mode .blue-main {
+    background-color: var(--dark-bg-color);
+    color: #eaeaea;
+}
+
+/*
+   7. PERSONAL CALENDAR STYLES
+*/
+.personal-calendar {
+    background: var(--bg-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+body.dark-mode .personal-calendar {
+    background-color: var(--dark-bg-color);
+    color: #eaeaea;
+}
+.personal-calendar h2 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: color 0.3s ease;
+}
+body.dark-mode .personal-calendar h2 {
+    color: var(--primary-color);
+}
+
+/*
+   8. MODALS + FORMS
+*/
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.modal-content {
+    background: #ffffff;
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+body.dark-mode .modal-content {
+    background-color: var(--dark-secondary-color);
+    color: #eaeaea;
+}
+/* Modal Header */
+.modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+body.dark-mode .modal-content h3 {
+    color: #eaeaea;
+}
+/* Form styles */
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 5px;
+}
+body.dark-mode .form-group label {
+    color: #eaeaea;
+}
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+}
+/* Modal Buttons */
+.modal-content button {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.modal-content button:hover {
+    background-color: var(--event-hover-color);
+}
+.modal-content button.btn-cancel {
+    background-color: #f3f4f6;
+    color: #333333;
+}
+.modal-content button.btn-cancel:hover {
+    background-color: #ddd;
+}
+/* Align modal buttons */
+.modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Submit and Cancel Buttons in Modals */
+.btn-submit {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-submit:hover {
+    background-color: var(--event-hover-color);
+}
+.btn-cancel {
+    background-color: #ddd;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+body.dark-mode .btn-cancel {
+    background-color: #555555; /* Darker grey in dark mode */
+    color: #fff;
+}
+body.dark-mode .btn-cancel:hover {
+    background-color: #777777;
+}
+
+/* ----------------------------------------------------------------
+   9. VUECAL THEME OVERRIDES
+   We'll reference a custom class .vuecal--custom-theme
+   Make sure to apply this class to your <vue-cal> component.
+------------------------------------------------------------------*/
+.vuecal--custom-theme {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Menu + Title - Light Mode overrides by theme */
+.theme-blue .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.theme-blue .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important;
+    color: var(--text-color) !important;
+}
+
+.theme-blue .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important;
+    color: var(--text-color) !important;
+}
+
+.theme-pink .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #e91e63 */
+    color: #fff !important;
+}
+.theme-pink .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-pink .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+
+.theme-green .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #4caf50 */
+    color: #fff !important;
+}
+.theme-green .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-green .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-yellow .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ffeb3b */
+    color: #333 !important; /* Dark text for readability */
+}
+.theme-yellow .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-yellow .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-red .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #f44336 */
+    color: #fff !important;
+}
+.theme-red .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-red .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-purple .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #9c27b0 */
+    color: #fff !important;
+}
+.theme-purple .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-purple .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-orange .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ff9800 */
+    color: #fff !important;
+}
+.theme-orange .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-orange .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+/* Dark Mode overrides for Menu + Title */
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important;
+    color: var(--text-color) !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important;
+    color: var(--text-color) !important;
+}
+
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #e91e63 */
+    color: #fff !important;
+}
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #ffe0f0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #4caf50 */
+    color: #fff !important;
+}
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #e8f5e9 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ffeb3b */
+    color: #333 !important; /* Dark text for readability */
+}
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #fffde7 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #f44336 */
+    color: #fff !important;
+}
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #ffebee */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #9c27b0 */
+    color: #fff !important;
+}
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--secondary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--secondary-color) !important; /* #f3e5f5 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__menu {
+    background-color: var(--primary-color) !important; /* #ff9800 */
+    color: #fff !important;
+}
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__title {
+    background-color: var(--primary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
+}
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__title-bar {
+    background-color: var(--primary-color) !important; /* #fff3e0 */
+    color: var(--text-color) !important; /* #333 */
+}
+
+/* VueCal Weekdays */
+.theme-blue .vuecal--custom-theme .vuecal__weekdays,
+.theme-pink .vuecal--custom-theme .vuecal__weekdays,
+.theme-green .vuecal--custom-theme .vuecal__weekdays,
+.theme-yellow .vuecal--custom-theme .vuecal__weekdays,
+.theme-red .vuecal--custom-theme .vuecal__weekdays,
+.theme-purple .vuecal--custom-theme .vuecal__weekdays,
+.theme-orange .vuecal--custom-theme .vuecal__weekdays {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__weekdays,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__weekdays {
+    background-color: var(--dark-secondary-color) !important;
+    color: #eaeaea !important;
+}
+
+/* VueCal Events */
+.theme-blue .vuecal--custom-theme .vuecal__event,
+.theme-pink .vuecal--custom-theme .vuecal__event,
+.theme-green .vuecal--custom-theme .vuecal__event,
+.theme-yellow .vuecal--custom-theme .vuecal__event,
+.theme-red .vuecal--custom-theme .vuecal__event,
+.theme-purple .vuecal--custom-theme .vuecal__event,
+.theme-orange .vuecal--custom-theme .vuecal__event {
+    background-color: var(--event-color) !important;
+    color: #ffffff !important; /* White text */
+    border: 1px solid var(--event-hover-color) !important;
+    border-radius: 6px !important;
+    transition: background-color 0.3s ease !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__event,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__event {
+    background-color: var(--dark-event-color) !important;
+    color: #ffffff !important; /* White text */
+    border: 1px solid var(--dark-event-hover-color) !important;
+}
+.theme-blue .vuecal--custom-theme .vuecal__event:hover,
+.theme-pink .vuecal--custom-theme .vuecal__event:hover,
+.theme-green .vuecal--custom-theme .vuecal__event:hover,
+.theme-yellow .vuecal--custom-theme .vuecal__event:hover,
+.theme-red .vuecal--custom-theme .vuecal__event:hover,
+.theme-purple .vuecal--custom-theme .vuecal__event:hover,
+.theme-orange .vuecal--custom-theme .vuecal__event:hover {
+    background-color: var(--event-hover-color) !important;
+}
+.theme-blue.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-pink.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-green.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-yellow.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-red.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-purple.dark-mode .vuecal--custom-theme .vuecal__event:hover,
+.theme-orange.dark-mode .vuecal--custom-theme .vuecal__event:hover {
+    background-color: var(--dark-event-hover-color) !important;
+}
+
+/* ----------------------------------------------------------------
+   Responsive if needed
+------------------------------------------------------------------*/
+@media (max-width: 768px) {
+    .blue-container {
+        grid-template-columns: 1fr; /* Hide or stack sidebar? */
+        grid-template-rows: 60px auto;
+    }
+    .blue-sidebar {
+        display: none; /* Hide sidebar on small screens */
+    }
+    .blue-header {
+        justify-content: space-between;
+    }
+    /* Add hamburger menu logic if implementing responsive navigation */
+}
+
+/* ----------------------------------------------------------------
+   Error message color
+------------------------------------------------------------------*/
+.error {
+    color: red;
+    margin-top: 10px;
+}
+
+/* Member Tiles */
+.members-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.member-tile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 20px;
+    color: #fff;
+    min-width: 100px;
+}
+
+.remove-user-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 1.2rem;
+}
+
+/* Add User Button */
+.btn-add-user {
+    margin-top: 15px;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-add-user:hover {
+    background-color: var(--event-hover-color);
+}
+
+/* Leave Calendar Button */
+.btn-leave-calendar {
+    margin-top: 15px;
+    background-color: #dc3545; /* Red */
+    color: #fff;
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-leave-calendar:hover {
+    background-color: #c82333;
+}
+
+/* Color Options */
+.color-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.color-option {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-option.selected {
+    border: 3px solid #000;
+}
+
+.color-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Member Chips */
+.member-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.chip {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.chip-close {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+/* Member Input */
+.member-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.member-input input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-submit {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-submit:hover {
+    background-color: var(--event-hover-color);
+}
+
+.btn-cancel {
+    background-color: #6c757d; /* Gray */
+    color: #fff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive Modals */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 90%;
+    }
+}
+
+/* Additional Styles for Confirmation Modal */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500; /* Adjust as needed */
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+}
+
+.members-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.members-container .member-tile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 20px;
+    color: #fff;
+    min-width: 100px;
+}
+
+.color-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.color-option {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-option.selected {
+    border: 3px solid #000;
+}
+
+.color-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-block;
+}
