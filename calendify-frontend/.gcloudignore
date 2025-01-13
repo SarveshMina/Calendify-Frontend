@@ -1,0 +1,22 @@
+# .gcloudignore
+
+# Ignore common stuff:
+.git/
+.gitignore
+.gcloudignore
+node_modules/
+npm-debug.log
+package-lock.json
+yarn-error.log
+
+# Ignore non-production code
+public/
+src/
+*.md
+*.log
+*.env
+
+# Re-include the final build artifacts
+!dist/
+!dist/**
+!app.yaml
