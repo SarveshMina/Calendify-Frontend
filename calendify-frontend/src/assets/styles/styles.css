@@ -1133,3 +1133,17 @@ body.dark-mode .btn-cancel:hover {
     border-radius: 50%;
     display: inline-block;
 }
+
+/* Make the user-icon button transparent in dark mode */
+body.dark-mode .user-icon-btn {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: #fff; /* so the icon or text remains visible */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Optional: slight hover effect in dark mode */
+body.dark-mode .user-icon-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--primary-color);
+}

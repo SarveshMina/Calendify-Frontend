@@ -8,6 +8,69 @@
       </div>
       <div class="header-right">
         <span>User ID: {{ userId }}</span>
+        <!-- The user-icon button -->
+        <div class="account-dropdown" ref="accountDropdown">
+          <button class="user-icon-btn" @click="toggleAccountPanel" aria-label="Open Account Panel">
+            <img
+                :src="darkMode ? darkUserIcon : lightUserIcon"
+                alt="User Icon"
+                class="user-icon"
+            />
+          </button>
+
+          <!-- Dropdown Panel with Transition -->
+          <transition name="fade-slide">
+            <div
+                v-if="showAccountPanel"
+                class="account-panel"
+                @click.stop
+            >
+              <h2>Account Management</h2>
+
+              <!-- Current details -->
+              <div class="profile-details">
+                <p><strong>Username:</strong> {{ currentapUsername }}</p>
+                <button class="btn-edit-field" @click="openEditFieldModal('username')">Edit</button>
+
+                <p><strong>Email:</strong> {{ currentapEmail }}</p>
+                <button class="btn-edit-field" @click="openEditFieldModal('email')">Edit</button>
+
+                <button class="btn-edit-field" @click="openEditFieldModal('password')">Change Password</button>
+              </div>
+
+              <hr />
+
+              <!-- "My Calendars" section -->
+              <div class="profile-calendars">
+                <h3>Your Calendars</h3>
+                <ul class="calendar-list">
+                  <li
+                      v-for="cal in userCalendars"
+                      :key="cal.calendarId"
+                      class="calendar-item"
+                  >
+                    <span>
+                      <strong>{{ cal.name }}</strong>
+                      <small>({{ cal.isGroup ? 'Group' : 'Personal' }})</small>
+                    </span>
+                    <button
+                        class="btn-goto-calendar"
+                        @click="accountPanelGotoCalendar(cal.calendarId)"
+                    >
+                      Open
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="modal-buttons">
+                <button type="button" class="btn-cancel" @click="closeAccountPanel">Close</button>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- Dark Mode Toggle -->
         <button @click="toggleDarkMode" class="toggle-container" aria-label="Toggle Dark Mode">
           <img :src="darkMode ? moonIcon : sunIcon" alt="Dark Mode Toggle" class="toggle-icon" />
         </button>
@@ -358,17 +421,44 @@
       <p v-else>
         Loading calendar... (activeCalendarId={{ activeCalendarId }}, defaultCalendarId={{ defaultCalendarId }})
       </p>
+
+      <!-- Single-Field Edit Modal -->
+      <div
+          v-if="showEditFieldModal"
+          class="modal-backdrop"
+          @click.self="closeEditFieldModal"
+      >
+        <div class="modal-content">
+          <h3>Edit {{ editFieldName }}</h3>
+          <form @submit.prevent="submitFieldEdit">
+            <div class="form-group">
+              <label :for="`edit-${editFieldName}`">
+                New {{ editFieldName }}
+              </label>
+              <input
+                  v-if="editFieldName !== 'password'"
+                  :id="`edit-${editFieldName}`"
+                  type="text"
+                  v-model="editFieldValue"
+                  required
+              />
+              <input
+                  v-else
+                  :id="`edit-${editFieldName}`"
+                  type="password"
+                  v-model="editFieldValue"
+                  required
+              />
+            </div>
+
+            <div class="modal-buttons">
+              <button type="submit" class="btn-submit">Save</button>
+              <button type="button" class="btn-cancel" @click="closeEditFieldModal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
-
-    <!-- Add User Modal -->
-    <!-- Already included above -->
-
-    <!-- Edit Calendar Modal -->
-    <!-- Already included above -->
-
-    <!-- Leave Calendar Confirmation Modal -->
-    <!-- Already included above -->
-
   </div>
 </template>
 
@@ -378,6 +468,8 @@ import PersonalCalendar from '@/components/PersonalCalendar.vue';
 import HomeCalendar from '@/components/HomeCalendar.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import calendarService from '@/services/calendarService';
+import axios from 'axios';
+import { buildFunctionUrl } from '@/services/urlBuilder';
 import '@/assets/styles/styles.css';
 
 export default {
@@ -389,18 +481,34 @@ export default {
       showCreateModal: false,
       newCalendarName: '',
       selectedColor: '',
+
+      // Account Panel (dropdown)
+      showAccountPanel: false,
+
+      // Current user details
+      currentUsername: '',  // Store the user’s current username
+      currentEmail: '',     // Store the user’s current email
+
+      // Single-field edit modal
+      showEditFieldModal: false,
+      editFieldName: '',    // "username" | "email" | "password"
+      editFieldValue: '',   // New value typed by user
+
       // Group Calendar Modal
       showCreateGroupModal: false,
       groupCalendarName: '',
       groupSelectedColor: '',
       groupMembers: [],
       memberUsername: '',
-      // For details
+
+      // For calendar details
       showDetailsModal: false,
+
       // For editing calendar
       showEditCalendarModal: false,
       editCalendarName: '',
       editCalendarColor: '',
+
       // For deletion
       showConfirmDeleteModal: false,
 
@@ -423,6 +531,8 @@ export default {
       // Dark mode
       moonIcon: require('@/assets/icons/moon.svg'),
       sunIcon: require('@/assets/icons/sun.svg'),
+      lightUserIcon: require('@/assets/icons/light-user-icon.svg'),
+      darkUserIcon: require('@/assets/icons/dark-user-icon.svg'),
       darkMode: false
     };
   },
@@ -430,10 +540,15 @@ export default {
     ...mapGetters([
       'userId',
       'defaultCalendarId',
-      'calendars', // array of user calendars
+      'calendars', // Array of user calendars
       'activeCalendarId',
       'activeCalendar'
     ]),
+    // Convenient getters for the username/email in the store
+    currentapUsername() { return this.$store.getters.currentUsername; },
+    currentapEmail() { return this.$store.getters.currentEmail; },
+
+    // For simpler usage in template
     userCalendars() {
       return this.calendars;
     },
@@ -449,6 +564,12 @@ export default {
     if (this.userId) {
       this.fetchCalendars();
     }
+    // Add event listener for clicks outside the account panel (dropdown)
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    // Clean up the event listener
+    document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
     ...mapActions([
@@ -458,7 +579,7 @@ export default {
       'fetchAllEvents'
     ]),
 
-    // Maps color strings (like 'pink') to the actual hex code you want to display
+    // Color helper
     calColor(color) {
       const colorMap = {
         'pink': '#e91e63',
@@ -469,16 +590,30 @@ export default {
         'orange': '#ff9800',
         'blue': '#0078d4'
       };
-      return colorMap[color] || '#0078d4'; // Default to blue
+      return colorMap[color] || '#0078d4';
     },
 
-    closeConfirmDeleteModal() {
-      this.showConfirmDeleteModal = false;
+    // Toggle the dropdown account panel
+    toggleAccountPanel() {
+      this.showAccountPanel = !this.showAccountPanel;
+    },
+    // Force close of account panel
+    closeAccountPanel() {
+      this.showAccountPanel = false;
     },
 
-    handleLogout() {
-      this.logout();
-      this.$router.push('/');
+    // If click outside the dropdown => close
+    handleClickOutside(event) {
+      const dropdown = this.$refs.accountDropdown;
+      if (dropdown && !dropdown.contains(event.target)) {
+        this.closeAccountPanel();
+      }
+    },
+
+    accountPanelGotoCalendar(calId) {
+      // Switch active calendar
+      this.setActiveCalendar(calId);
+      this.closeAccountPanel();
     },
 
     setActiveCalendar(calendarId) {
@@ -490,6 +625,61 @@ export default {
       }
     },
 
+    handleLogout() {
+      this.logout();
+      this.$router.push('/');
+    },
+    toggleDarkMode() {
+      this.darkMode = !this.darkMode;
+      document.body.classList.toggle('dark-mode', this.darkMode);
+    },
+
+    // Single-field editing
+    openEditFieldModal(field) {
+      this.editFieldName = field;
+      this.showEditFieldModal = true;
+      if (field === 'username') {
+        this.editFieldValue = this.currentapUsername;
+      } else if (field === 'email') {
+        this.editFieldValue = this.currentapEmail;
+      } else {
+        // field === 'password'
+        this.editFieldValue = ''; // Empty, because we never store the current password
+      }
+    },
+    closeEditFieldModal() {
+      this.showEditFieldModal = false;
+      this.editFieldName = '';
+      this.editFieldValue = '';
+    },
+    async submitFieldEdit() {
+      const updates = {};
+      if (this.editFieldName === 'username') {
+        updates.username = this.editFieldValue;
+      } else if (this.editFieldName === 'email') {
+        updates.email = this.editFieldValue;
+      } else if (this.editFieldName === 'password') {
+        updates.password = this.editFieldValue;
+      }
+
+      try {
+        // Make sure to build the URL with your function's base:
+        await axios.put(buildFunctionUrl(`/user/${this.userId}`), updates);
+
+        // Re-fetch the user doc so the store is updated:
+        await this.$store.dispatch('fetchUserDoc');
+        this.notify({ type: 'success', message: 'Profile updated successfully.' });
+
+        // Close the edit modal
+        this.closeEditFieldModal();
+      } catch (err) {
+        console.error('Error updating field:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to update.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
+    // Create Personal Calendar
     openCreateModal() {
       this.showCreateModal = true;
       this.newCalendarName = '';
@@ -500,7 +690,6 @@ export default {
     },
     async createNewCalendar() {
       try {
-        // We send the raw 'pink' etc. to backend but show #e91e63 in UI
         await calendarService.createPersonalCalendar(
             this.userId,
             this.newCalendarName,
@@ -516,6 +705,7 @@ export default {
       }
     },
 
+    // Create Group Calendar
     openCreateGroupModal() {
       this.showCreateGroupModal = true;
       this.groupCalendarName = '';
@@ -562,7 +752,6 @@ export default {
     },
     async createNewGroupCalendar() {
       try {
-        // Send the raw 'pink' etc. to backend but show #e91e63 in UI
         const ownerId = this.userId;
         const colorToUse = this.groupSelectedColor || 'pink';
         const memberUsernames = this.groupMembers.map(m => m.username);
@@ -583,6 +772,7 @@ export default {
       }
     },
 
+    // Calendar Details Modal
     openDetailsModal() {
       if (!this.activeCalendar) return;
       this.showDetailsModal = true;
@@ -591,6 +781,7 @@ export default {
       this.showDetailsModal = false;
     },
 
+    // Add User Modal
     openAddUserModal() {
       this.showAddUserModal = true;
       this.newUserToAdd = '';
@@ -630,9 +821,8 @@ export default {
       }
     },
 
+    // Get Username by userId
     getUsername(userId) {
-      // Assuming activeCalendar.members and activeCalendar.memberUsernames are aligned
-      // If memberUsernames are included in the calendar data from the backend
       if (this.activeCalendar && this.activeCalendar.memberUsernames) {
         const index = this.activeCalendar.members.indexOf(userId);
         if (index !== -1 && this.activeCalendar.memberUsernames[index]) {
@@ -641,9 +831,7 @@ export default {
       }
       return userId; // Fallback to userId
     },
-
     async removeUser(username) {
-      // Fetch userId based on username
       try {
         const userId = await this.fetchUserId(username);
         if (!userId) {
@@ -665,7 +853,6 @@ export default {
         this.notify({ type: 'error', message: errorMsg });
       }
     },
-
     async fetchUserId(username) {
       try {
         const response = await calendarService.getUserId(username);
@@ -676,6 +863,7 @@ export default {
       }
     },
 
+    // Leave Group Calendar Modal
     openLeaveCalendarModal() {
       this.showLeaveCalendarModal = true;
     },
@@ -699,6 +887,7 @@ export default {
       }
     },
 
+    // Edit Calendar Modal
     openEditCalendarModal() {
       this.showEditCalendarModal = true;
       this.editCalendarName = this.activeCalendar.name;
@@ -731,6 +920,10 @@ export default {
       }
     },
 
+    // Delete Calendar Confirmation
+    confirmDeleteCalendar() {
+      this.showConfirmDeleteModal = true;
+    },
     async deleteCalendar() {
       if (!this.activeCalendar) return;
       try {
@@ -757,10 +950,8 @@ export default {
         this.notify({ type: 'error', message: errorMsg });
       }
     },
-
-    toggleDarkMode() {
-      this.darkMode = !this.darkMode;
-      document.body.classList.toggle('dark-mode', this.darkMode);
+    closeConfirmDeleteModal() {
+      this.showConfirmDeleteModal = false;
     }
   }
 };
@@ -1023,5 +1214,270 @@ export default {
   height: 24px;
   border-radius: 50%;
   display: inline-block;
+}
+
+
+.account-panel-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 400px; /* or 300px, etc. */
+  background-color: #f9f9f9;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  transition: transform 0.3s ease-out;
+  /* Slide in from right */
+  transform: translateX(0);
+}
+
+.account-panel-content {
+  padding: 20px;
+  overflow-y: auto;
+  height: 100%;
+}
+/* Example: give the button similar styling as .toggle-container */
+.user-icon-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 40px;       /* same width/height as your toggle button */
+  height: 40px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px; /* optional spacing between buttons */
+}
+
+/* The icon itself (the <img> tag) */
+.user-icon {
+  width: 24px;       /* same size as your toggle-icon if you like */
+  height: 24px;
+  object-fit: contain;
+}
+.btn-edit-field {
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  margin-left: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-edit-field:hover {
+  background-color: #005c9c;
+}
+
+
+.profile-calendars {
+  margin-top: 1.5rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+.calendar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.btn-goto-calendar {
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-goto-calendar:hover {
+  background-color: #005c9c;
+}
+
+/* Account Dropdown Container */
+.account-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Account Panel Dropdown */
+.account-panel {
+  position: absolute;
+  top: 50px; /* Adjust based on header height */
+  right: 0;
+  width: 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  z-index: 3000;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Styles */
+.dark-mode .account-panel {
+  background-color: #2b2b2b;
+  color: #f2f2f2;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* Transition Classes */
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-slide-enter, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Profile Details */
+.profile-details p {
+  margin: 0.5rem 0;
+}
+
+.btn-edit-field {
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  margin-left: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-edit-field:hover {
+  background-color: #005c9c;
+}
+
+/* Profile Calendars */
+.profile-calendars {
+  margin-top: 1rem;
+}
+
+.calendar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.btn-goto-calendar {
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-goto-calendar:hover {
+  background-color: #005c9c;
+}
+
+.dark-mode .btn-goto-calendar {
+  background-color: #555;
+}
+
+.dark-mode .btn-goto-calendar:hover {
+  background-color: #666;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-submit {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-submit:hover {
+  background-color: var(--event-hover-color);
+}
+
+.btn-cancel {
+  background-color: #6c757d; /* Gray */
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .account-panel {
+    width: 90%;
+    top: 60px; /* Adjust based on header height */
+  }
+}
+
+/* Additional Styles for Elements Inside Account Panel */
+
+/* Profile Details */
+.profile-details p {
+  margin: 0.5rem 0;
+}
+
+.profile-details button {
+  font-size: 0.75rem;
+}
+
+/* Profile Calendars */
+.profile-calendars h3 {
+  margin-bottom: 0.5rem;
+}
+
+/* Calendar Item Text */
+.calendar-item span {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Small Font Sizes */
+.profile-details p, .profile-calendars h3, .calendar-item small {
+  font-size: 0.875rem;
+}
+
+/* Hover Effects */
+.account-panel button:hover {
+  opacity: 0.9;
 }
 </style>

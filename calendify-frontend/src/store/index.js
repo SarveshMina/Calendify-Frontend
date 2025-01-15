@@ -10,6 +10,7 @@ export default createStore({
     state: {
         userId: localStorage.getItem('userId') || '',
         defaultCalendarId: localStorage.getItem('defaultCalendarId') || '',
+        userDoc: {},
         notifications: [],
         calendars: [],
         activeCalendarId: localStorage.getItem('activeCalendarId') || '',
@@ -26,12 +27,16 @@ export default createStore({
             state.activeCalendarId = calendarId;
             localStorage.setItem('activeCalendarId', calendarId);
         },
+        SET_USER_DOC(state, userDoc) {
+            state.userDoc = userDoc;
+        },
         CLEAR_AUTH(state) {
             state.userId = '';
             state.defaultCalendarId = '';
             state.activeCalendarId = '';
             state.calendars = [];
             state.allEvents = [];
+            state.userDoc = {};
             localStorage.removeItem('activeCalendarId');
         },
         ADD_NOTIFICATION(state, notification) {
@@ -59,6 +64,8 @@ export default createStore({
                 commit('SET_ACTIVE_CALENDAR_ID', default_calendar_id);
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('defaultCalendarId', default_calendar_id);
+                commit('SET_USER_ID', userId);
+                await dispatch('fetchUserDoc');
 
                 // fetch calendars
                 dispatch('fetchCalendars');
@@ -66,6 +73,21 @@ export default createStore({
             } catch (error) {
                 dispatch('notify', { type: 'error', message: error?.response?.data?.error || 'Login failed.' });
                 throw error;
+            }
+        },
+
+        async fetchUserDoc({ commit, state }) {
+            try {
+                // Suppose your backend has GET /user/{userId}/profile
+                // that returns { username, email, etc. }
+                const response = await axios.get(
+                    buildFunctionUrl(`/user/${state.userId}/profile`)
+                );
+                // Then store it in Vuex
+                commit('SET_USER_DOC', response.data);
+            } catch (err) {
+                console.error('Failed to fetch user doc:', err);
+                // optionally show a notification
             }
         },
 
@@ -136,6 +158,8 @@ export default createStore({
         notifications: (state) => state.notifications,
         calendars: (state) => state.calendars,
         activeCalendarId: (state) => state.activeCalendarId,
+        currentUsername: (state) => state.userDoc.username || '',
+        currentEmail: (state) => state.userDoc.email || '',
         activeCalendar: (state) =>
             state.calendars.find((cal) => cal.calendarId === state.activeCalendarId),
         activeCalendarColor: (state, getters) => {
