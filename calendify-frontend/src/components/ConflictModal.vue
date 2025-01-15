@@ -1,88 +1,89 @@
-<!-- src/components/ConfirmationModal.vue -->
+<!-- src/components/ConflictModal.vue -->
 <template>
   <div
       v-if="visible"
       class="modal-backdrop"
-      @click.self="handleCancel"
-      aria-modal="true"
+      @click.self="handleClose"
       role="dialog"
   >
     <div class="modal-content">
-      <h3>{{ title }}</h3>
+      <h3>Conflict Detected</h3>
       <p>{{ message }}</p>
+
       <div class="modal-buttons">
-        <button
-            ref="confirmButton"
-            class="btn-submit"
-            @click="handleConfirm"
-            aria-label="Confirm"
-        >
-          {{ confirmText }}
-        </button>
-        <button
-            class="btn-cancel"
-            @click="handleCancel"
-            aria-label="Cancel"
-        >
-          {{ cancelText }}
+        <!-- Only one button that closes the modal -->
+        <button class="btn-cancel" @click="handleClose">
+          OK
         </button>
       </div>
     </div>
   </div>
 </template>
+
 <script>
 export default {
-  name: 'ConfirmationModal',
+  name: 'ConflictModal',
   props: {
     visible: {
       type: Boolean,
-      required: true,
-    },
-    title: {
-      type: String,
-      default: 'Confirm Action',
+      required: true
     },
     message: {
       type: String,
-      default: 'Are you sure you want to proceed?',
-    },
-    confirmText: {
-      type: String,
-      default: 'Yes',
-    },
-    cancelText: {
-      type: String,
-      default: 'No',
-    },
+      default: 'There is a conflict.'
+    }
   },
-  emits: ['confirm', 'cancel'],
-  watch: {
-    visible(newVal) {
-      if (newVal) {
-        document.body.style.overflow = 'hidden';
-        this.$nextTick(() => {
-          this.$refs.confirmButton.focus();
-        });
-      } else {
-        document.body.style.overflow = '';
-      }
-    },
-  },
+  emits: ['close'],
   methods: {
-    handleConfirm() {
-      this.$emit('confirm');
-    },
-    handleCancel() {
-      this.$emit('cancel');
-    },
-  },
-  beforeUnmount() {
-    // Ensure that scrolling is enabled when component is destroyed
-    document.body.style.overflow = '';
-  },
+    handleClose() {
+      // Just emit 'close' so the parent can set showConflictModal = false
+      this.$emit('close');
+    }
+  }
 };
 </script>
 
 <style scoped>
-/* No additional styles needed as we're using global styles */
+.modal-backdrop {
+  /* Similar modal backdrop styling as your others */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1600;
+}
+
+.modal-content {
+  background: #fff;
+  width: 400px;
+  max-width: 90%;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Example styling for the single "OK" button */
+.btn-cancel {
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-cancel:hover {
+  background-color: #005cbf;
+}
 </style>

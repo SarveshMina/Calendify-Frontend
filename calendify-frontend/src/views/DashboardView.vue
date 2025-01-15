@@ -933,7 +933,7 @@ export default {
   }
 }
 
-/* Additional Styles for Confirmation Modal */
+/* Modal Backdrop */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -945,14 +945,49 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 1500; /* Adjust as needed */
+  /* Ensures the content doesn't scroll behind the modal */
+  overflow: hidden;
 }
 
+/* Modal Content Container */
 .modal-content {
   background-color: #fff;
-  padding: 20px;
+  /* Control how wide the modal can go on large screens */
+  width: 500px;
+  max-width: 95%;  /* For smaller screens, let it scale down */
+  max-height: 90vh; /* Keep the modal from growing taller than the viewport */
+  overflow-y: auto; /* Scroll inside the modal if content is too tall */
   border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* If you want more consistent spacing inside form inputs: */
+.modal-content form .form-group {
+  margin-bottom: 16px;
+}
+
+.modal-content form .form-group label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+.modal-content form .form-group input,
+.modal-content form .form-group select,
+.modal-content form .form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Larger screens can have a larger modal */
+@media (min-width: 768px) {
+  .modal-content {
+    width: 600px;
+  }
 }
 
 .members-container {

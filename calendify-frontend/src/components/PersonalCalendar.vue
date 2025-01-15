@@ -129,13 +129,14 @@
         @cancel="closeConfirmDeleteModal"
     />
 
-    <!-- Conflict Modal -->
+    <!-- ConflictModal usage -->
     <ConflictModal
         :visible="showConflictModal"
         :message="conflictMessage"
         @close="closeConflictModal"
         @proceed="handleConflictProceed"
-    />
+    >
+    </ConflictModal>
 
     <!-- Display any error messages -->
     <div v-if="error" class="error">{{ error }}</div>
@@ -303,8 +304,7 @@ export default {
         this.closeAddEventModal();
       } catch (err) {
         if (err.response && err.response.status === 409) {
-          // Conflict detected
-          this.conflictMessage = err.response.data.error || 'There was a conflict while creating the event.';
+          this.conflictMessage = err.response.data.error || 'There was a conflict.';
           this.showConflictModal = true;
         } else {
           const errorMsg = err?.response?.data?.error || 'Failed to create event.';
@@ -469,5 +469,89 @@ export default {
 </script>
 
 <style scoped>
-/* Adjust or remove if you have global styles. */
+.modal-backdrop.add-event-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500; /* Adjust as needed */
+  /* Ensures the content doesn't scroll behind the modal */
+  overflow: hidden;
+}
+
+.modal-backdrop.event-info-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500; /* Adjust as needed */
+  /* Ensures the content doesn't scroll behind the modal */
+  overflow: hidden;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500; /* Adjust as needed */
+  /* Ensures the content doesn't scroll behind the modal */
+  overflow: hidden;
+}
+
+/* Modal Content Container */
+.modal-content {
+  background-color: #fff;
+  /* Control how wide the modal can go on large screens */
+  width: 500px;
+  max-width: 95%;  /* For smaller screens, let it scale down */
+  max-height: 90vh; /* Keep the modal from growing taller than the viewport */
+  overflow-y: auto; /* Scroll inside the modal if content is too tall */
+  border-radius: 8px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* If you want more consistent spacing inside form inputs: */
+.modal-content form .form-group {
+  margin-bottom: 16px;
+}
+
+.modal-content form .form-group label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+.modal-content form .form-group input,
+.modal-content form .form-group select,
+.modal-content form .form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Larger screens can have a larger modal */
+@media (min-width: 768px) {
+  .modal-content {
+    width: 600px;
+  }
+}
 </style>

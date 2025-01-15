@@ -59,10 +59,11 @@
         </form>
       </div>
 
-      <!-- Register Panel -->
+      <!-- Registration Panel with Email field -->
       <div class="auth-panel register-panel">
         <h3>Register</h3>
         <form @submit.prevent="doRegister">
+          <!-- USERNAME -->
           <div class="form-group">
             <input
                 v-model="registerUsername"
@@ -72,6 +73,19 @@
                 class="auth-input"
             />
           </div>
+
+          <!-- EMAIL -->
+          <div class="form-group">
+            <input
+                v-model="registerEmail"
+                type="email"
+                placeholder="Email"
+                required
+                class="auth-input"
+            />
+          </div>
+
+          <!-- PASSWORD -->
           <div class="form-group password-group">
             <input
                 :type="showRegisterPassword ? 'text' : 'password'"
@@ -88,6 +102,8 @@
                 @click="toggleRegisterPassword"
             />
           </div>
+
+          <!-- CONFIRM PASSWORD -->
           <div class="form-group password-group">
             <input
                 :type="showConfirmPassword ? 'text' : 'password'"
@@ -104,6 +120,7 @@
                 @click="toggleConfirmPassword"
             />
           </div>
+
           <p v-if="registerError" class="error">{{ registerError }}</p>
           <button type="submit" class="btn btn-primary">Register</button>
         </form>
@@ -131,6 +148,7 @@ export default {
 
       // Register data
       registerUsername: '',
+      registerEmail: '',
       registerPassword: '',
       confirmPassword: '',
       registerError: null,
@@ -164,11 +182,11 @@ export default {
         this.registerError = 'Passwords do not match.';
         return;
       }
-
       try {
         await this.register({
           username: this.registerUsername,
           password: this.registerPassword,
+          email: this.registerEmail
         });
         // If register is successful, navigate to dashboard
         this.$router.push('/dashboard');
