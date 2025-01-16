@@ -3,7 +3,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import store from '@/store';
 import AuthLanding from '@/views/AuthLanding.vue';
-import Dashboard from '@/views/DashboardView.vue'; // Assume you have a Dashboard component
+import Dashboard from '@/views/DashboardView.vue';
+import ContactView from '@/views/ContactView.vue'; // Import the Contact Page
 
 const routes = [
     {
@@ -16,6 +17,11 @@ const routes = [
         name: 'Dashboard',
         component: Dashboard,
         meta: { requiresAuth: true },
+    },
+    {
+        path: '/contact',
+        name: 'Contact',
+        component: ContactView,
     },
 ];
 
