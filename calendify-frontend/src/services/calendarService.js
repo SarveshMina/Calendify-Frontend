@@ -13,7 +13,23 @@ const calendarService = {
     },
 
     /**
+     * Imports an internet calendar from an iCal URL.
+     * @param {String} userId - The ID of the user importing the calendar.
+     * @param {String} iCalURL - The URL of the iCal feed to import.
+     * @param {String} name - (Optional) Name for the imported calendar.
+     * @param {String} color - (Optional) Color for the imported calendar.
+     * @returns {Promise} - Axios response promise.
+     */
+    async importInternetCalendar(userId, iCalURL, name = '', color = 'blue') {
+        const payload = { userId, iCalURL, name, color };
+        return await axios.post(buildFunctionUrl('/calendar/import'), payload);
+    },
+
+    /**
      * Deletes a personal calendar.
+     * @param {String} calendarId - The ID of the calendar to delete.
+     * @param {String} userId - The ID of the user performing the deletion.
+     * @returns {Promise} - Axios response promise.
      */
     async deletePersonalCalendar(calendarId, userId) {
         return await axios.post(
@@ -21,6 +37,22 @@ const calendarService = {
             { userId }
         );
     },
+
+    /**
+     * Deletes a group calendar.
+     * @param {String} calendarId - The ID of the group calendar to delete.
+     * @param {String} adminId - The ID of the admin performing the deletion.
+     * @returns {Promise} - Axios response promise.
+     */
+    async deleteGroupCalendar(calendarId, adminId) {
+        return await axios.post(
+            buildFunctionUrl(`/group-calendar/${calendarId}/delete`),
+            { adminId } // Changed from { userId } to { adminId }
+        );
+    },
+
+
+
 
     /**
      * Creates a new group calendar.
@@ -37,6 +69,15 @@ const calendarService = {
             ...updatedData,
         });
     },
+
+    // src/services/calendarService.js
+    async editPersonalCalendar(calendarId, userId, updatedData) {
+        const payload = { ...updatedData }; // Exclude userId from the body
+        return axios.put(buildFunctionUrl(`/personal-calendar/${calendarId}/edit`), payload, {
+            headers: { 'user_id': userId } // Include userId in headers
+        });
+    },
+
 
     // Add user to group calendar
     async addUserToGroupCalendar(calendarId, adminId, userId) {

@@ -6,7 +6,7 @@
       <div class="header-left">
         <router-link to="/dashboard" class="logo-link">
           <img
-              :src="darkMode ? require('@/assets/icons/logo-dark.webp') : require('@/assets/icons/logo-light.webp')"
+              :src="darkMode ? require('@/assets/icons/logo-dark.png') : require('@/assets/icons/logo-light.png')"
               alt="Calendify Logo"
               class="calendify-logo"
           />
@@ -108,9 +108,174 @@
         <button class="btn-create-calendar" @click="openCreateGroupModal">
           + Create Group Calendar
         </button>
+        <button class="btn-import-calendar" @click="openImportModal">
+          + Import Calendar
+        </button>
         <button class="btn-view-details" @click="openDetailsModal" :disabled="!activeCalendar">
           View Calendar Details
         </button>
+      </div>
+
+      <!-- Import Calendar Modal -->
+      <div v-if="showImportModal" class="modal-backdrop add-event-modal" @click.self="handleImportModalBackdropClick">
+        <div class="modal-content">
+          <h3 :style="{ color: calColor(importSelectedColor) }">Import Internet Calendar</h3>
+          <form @submit.prevent="importCalendar">
+            <div class="form-group">
+              <label for="importCalURL" :style="{ color: calColor(importSelectedColor) }">iCal URL:</label>
+              <input
+                  id="importCalURL"
+                  v-model="importCalURL"
+                  type="url"
+                  placeholder="Enter the iCal feed URL"
+                  required
+              />
+            </div>
+
+            <!-- Optional: Select Calendar Name -->
+            <div class="form-group">
+              <label :for="'importCalName'" :style="{ color: calColor(importSelectedColor) }">Calendar Name:</label>
+              <input
+                  id="importCalName"
+                  v-model="importCalName"
+                  type="text"
+                  placeholder="Optional: Name for the imported calendar"
+              />
+            </div>
+
+            <!-- Color Selection -->
+            <div class="form-group">
+              <label for="importCalColor" :style="{ color: calColor(importSelectedColor) }">Choose a Color:</label>
+              <div id="importCalColor" class="color-options">
+                <label
+                    v-for="color in availableColors"
+                    :key="color.value"
+                    :style="{ backgroundColor: calColor(color.value) }"
+                    class="color-option"
+                    :class="{ selected: color.value === importSelectedColor }"
+                >
+                  <input
+                      type="radio"
+                      name="importCalendarColor"
+                      :value="color.value"
+                      v-model="importSelectedColor"
+                      required
+                  />
+                  <span class="color-circle"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit and Cancel buttons -->
+            <div class="modal-buttons">
+              <button
+                  type="submit"
+                  class="btn-submit"
+                  :style="{ backgroundColor: calColor(importSelectedColor) }"
+                  :disabled="isImporting"
+                  aria-label="Import Calendar"
+              >
+          <span v-if="isImporting">
+            <i class="spinner"></i> Importing...
+          </span>
+                <span v-else>
+            Import
+          </span>
+              </button>
+              <button
+                  type="button"
+                  class="btn-cancel"
+                  @click="closeImportModal"
+                  :disabled="isImporting"
+                  aria-label="Cancel Import"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- EDIT PERSONAL CALENDAR MODAL -->
+      <div
+          v-if="showEditPersonalCalendarModal"
+          class="modal-backdrop edit-modal"
+          @click.self="handleEditModalBackdropClick"
+      >
+        <div class="modal-content">
+          <h3 :style="{ color: calColor(editPersonalCalendarColor) }">Edit Personal Calendar</h3>
+          <form @submit.prevent="editPersonalCalendar">
+            <div class="form-group">
+              <label
+                  for="editPersonalCalendarName"
+                  :style="{ color: calColor(editPersonalCalendarColor) }"
+              >
+                Name:
+              </label>
+              <input
+                  id="editPersonalCalendarName"
+                  v-model="editPersonalCalendarName"
+                  required
+              />
+            </div>
+
+            <div class="form-group">
+              <label
+                  for="editPersonalCalendarColor"
+                  :style="{ color: calColor(editPersonalCalendarColor) }"
+              >
+                Color:
+              </label>
+              <div id="editPersonalCalendarColor" class="color-options">
+                <label
+                    v-for="color in availableColors"
+                    :key="color.value"
+                    :style="{ backgroundColor: calColor(color.value) }"
+                    class="color-option"
+                    :class="{ selected: editPersonalCalendarColor === color.value }"
+                >
+                  <input
+                      type="radio"
+                      name="editPersonalCalendarColor"
+                      :value="color.value"
+                      v-model="editPersonalCalendarColor"
+                      required
+                  />
+                  <span class="color-circle"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="modal-buttons">
+              <button
+                  type="submit"
+                  class="btn-submit"
+                  :style="{ backgroundColor: calColor(editPersonalCalendarColor) }"
+              >
+                Save
+              </button>
+              <button
+                  type="button"
+                  class="btn-cancel"
+                  @click="handleCloseEditModal"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Confirmation Modal for Discarding Changes -->
+        <ConfirmationModal
+            v-if="showDiscardConfirmation"
+            :visible="showDiscardConfirmation"
+            title="Discard Changes?"
+            message="You have unsaved changes. Do you want to discard them?"
+            confirmText="Discard"
+            cancelText="Keep Editing"
+            @confirm="discardEditChanges"
+            @cancel="cancelDiscard"
+        />
       </div>
 
       <!-- CREATE PERSONAL CALENDAR MODAL -->
@@ -273,14 +438,14 @@
       </div>
 
       <!-- VIEW CALENDAR DETAILS MODAL -->
-      <div v-if="showDetailsModal" class="modal-backdrop event-info-modal" @click.self="closeDetailsModal">
+      <div v-if="showDetailsModal && activeCalendar" class="modal-backdrop event-info-modal" @click.self="closeDetailsModal">
         <div class="modal-content">
           <h3>Calendar Details</h3>
-          <p><strong>Name:</strong> {{ activeCalendar.name }}</p>
-          <p><strong>Owner:</strong> {{ getUsername(activeCalendar.ownerId) }}</p>
-          <p><strong>Is Group:</strong> {{ activeCalendar.isGroup ? 'Yes' : 'No' }}</p>
+          <p><strong>Name:</strong> {{ activeCalendar?.name }}</p>
+          <p><strong>Owner:</strong> {{ getUsername(activeCalendar?.ownerId) }}</p>
+          <p><strong>Is Group:</strong> {{ activeCalendar?.isGroup ? 'Yes' : 'No' }}</p>
 
-          <div v-if="activeCalendar.isGroup">
+          <div v-if="activeCalendar?.isGroup">
             <p><strong>Members:</strong></p>
             <div class="members-container">
               <div
@@ -317,12 +482,29 @@
           </div>
 
           <div class="modal-buttons">
-            <button class="btn-edit" @click="openEditCalendarModal" v-if="isAdmin">Edit</button>
-            <button class="btn-delete" @click="confirmDeleteCalendar" v-if="isAdmin">Delete Calendar</button>
-            <button class="btn-cancel" @click="closeDetailsModal">Close</button>
+            <button
+                v-if="!activeCalendar.isGroup"
+                class="btn-edit"
+                @click="openEditPersonalCalendarModal"
+            >
+              Edit
+            </button>
+            <button
+                class="btn-delete"
+                @click="confirmDeleteCalendar"
+                v-if="isAdmin || !activeCalendar.isGroup"
+                :disabled="isDeleting"
+            >
+              Delete Calendar
+            </button>
+            <button
+                class="btn-cancel"
+                @click="closeDetailsModal"
+            >
+              Close
+            </button>
           </div>
         </div>
-      </div>
 
       <!-- ADD USER MODAL -->
       <div v-if="showAddUserModal" class="modal-backdrop" @click.self="closeAddUserModal">
@@ -399,16 +581,18 @@
           @cancel="closeLeaveCalendarModal"
       />
 
-      <!-- Confirmation Modal for Deletion -->
-      <ConfirmationModal
-          :visible="showConfirmDeleteModal"
-          title="Confirm Deletion"
-          message="Are you sure you want to delete this calendar? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          @confirm="deleteCalendar"
-          @cancel="closeConfirmDeleteModal"
-      />
+        <!-- Confirmation Modal for Deletion -->
+        <ConfirmationModal
+            :visible="showConfirmDeleteModal"
+            title="Confirm Deletion"
+            message="Are you sure you want to delete this calendar? This action cannot be undone."
+            confirmText="Delete"
+            cancelText="Cancel"
+            :isLoading="isDeleting"
+            @confirm="deleteCalendar"
+            @cancel="closeConfirmDeleteModal"
+        />
+      </div>
     </aside>
 
     <!-- Main content: HomeCalendar or PersonalCalendar -->
@@ -419,7 +603,7 @@
           :calendar-color="activeCalendarColor"
       />
       <PersonalCalendar
-          v-else-if="activeCalendarId"
+          v-else-if="activeCalendarId && activeCalendar"
           :userId="userId"
           :calendarId="activeCalendarId"
           :calendar-color="activeCalendarColor"
@@ -484,10 +668,28 @@ export default {
   components: { PersonalCalendar, HomeCalendar, ConfirmationModal },
   data() {
     return {
+      // Import Calendar Modal
+      showImportModal: false,
+      importCalURL: '',
+      importCalName: '',
+      importSelectedColor: '', // Default color
+      isImporting: false, // Loading state
+
+      isDeleting: false, // track deletion state
+
+
+
       // Personal Calendar Modal
       showCreateModal: false,
       newCalendarName: '',
       selectedColor: '',
+
+      showEditPersonalCalendarModal: false,
+      editPersonalCalendarName: '',
+      editPersonalCalendarColor: '',
+      initialEditPersonalCalendarName: '',      // To track initial name
+      initialEditPersonalCalendarColor: '',     // To track initial color
+      showDiscardConfirmation: false,           // To control the confirmation modal
 
       // Account Panel (dropdown)
       showAccountPanel: false,
@@ -533,6 +735,7 @@ export default {
         { name: 'Red', value: 'red' },
         { name: 'Purple', value: 'purple' },
         { name: 'Orange', value: 'orange' },
+        { name: 'Blue', value: 'blue' },
       ],
 
       // Dark mode
@@ -563,7 +766,13 @@ export default {
       return this.activeCalendar ? this.activeCalendar.color : 'blue';
     },
     isAdmin() {
-      return this.activeCalendar && this.userId === this.activeCalendar.ownerId;
+      return this.activeCalendar && this.userId === this.activeCalendar.ownerId && this.activeCalendar.isGroup;
+    },
+    hasUnsavedChanges() {
+      return (
+          this.editPersonalCalendarName !== this.initialEditPersonalCalendarName ||
+          this.editPersonalCalendarColor !== this.initialEditPersonalCalendarColor
+      );
     }
   },
   mounted() {
@@ -621,6 +830,82 @@ export default {
       // Switch active calendar
       this.setActiveCalendar(calId);
       this.closeAccountPanel();
+    },
+
+// Open Import Calendar Modal
+    openImportModal() {
+      this.showImportModal = true;
+      this.importCalURL = '';
+      this.importCalName = '';
+      this.importSelectedColor = 'blue'; // Default color
+    },
+
+    // Close Import Calendar Modal
+    closeImportModal() {
+      this.showImportModal = false;
+      this.importCalURL = '';
+      this.importCalName = '';
+      this.importSelectedColor = 'blue'; // Reset to default
+    },
+
+    // Import Calendar Modal Backdrop Click Handler
+    handleImportModalBackdropClick() {
+      if (!this.isImporting) {
+        this.closeImportModal();
+      }
+      // Else, do nothing to prevent closing
+    },
+
+    // Validate URL (Optional Enhancement)
+    validateURL(url) {
+      const pattern = new RegExp('^(https?:\\/\\/)' + // protocol
+          '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+          '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+          '(\\:\\d+)?' + // port
+          '(\\/[-a-z\\d%@_.~+&:]*)*' + // path
+          '(\\?[;&a-z\\d%@_.,~+&:=-]*)?' + // query string
+          '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+      return !!pattern.test(url);
+    },
+
+    // Import Calendar
+    async importCalendar() {
+      const { importCalURL, importCalName, importSelectedColor } = this;
+
+      // Basic URL validation
+      if (!this.validateURL(importCalURL)) {
+        this.notify({ type: 'error', message: 'Please enter a valid URL.' });
+        return;
+      }
+
+      this.isImporting = true; // Start loading
+
+      try {
+        // Call the importInternetCalendar method with all necessary parameters
+        const response = await calendarService.importInternetCalendar(
+            this.userId,
+            importCalURL,
+            importCalName || '',
+            importSelectedColor || 'blue'
+        );
+
+        this.notify({
+          type: 'success',
+          message: response.data.message || 'Calendar imported successfully.',
+        });
+
+        // Close the modal
+        this.closeImportModal();
+
+        // Refresh calendars
+        await this.fetchCalendars();
+      } catch (err) {
+        console.error('Error importing calendar:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to import calendar.';
+        this.notify({ type: 'error', message: errorMsg });
+      } finally {
+        this.isImporting = false; // End loading
+      }
     },
 
     setActiveCalendar(calendarId) {
@@ -894,6 +1179,81 @@ export default {
       }
     },
 
+    // Open Edit Personal Calendar Modal and set initial values
+    openEditPersonalCalendarModal() {
+      if (!this.activeCalendar) return;
+      this.showEditPersonalCalendarModal = true;
+      this.editPersonalCalendarName = this.activeCalendar.name;
+      this.editPersonalCalendarColor = this.activeCalendar.color;
+
+      // Set initial values for change detection
+      this.initialEditPersonalCalendarName = this.activeCalendar.name;
+      this.initialEditPersonalCalendarColor = this.activeCalendar.color;
+    },
+
+    // Handle backdrop clicks for the Edit Personal Calendar Modal
+    handleEditModalBackdropClick() {
+      if (this.hasUnsavedChanges) {
+        this.showDiscardConfirmation = true;
+      } else {
+        this.closeEditPersonalCalendarModal();
+      }
+    },
+
+    // Handle close button click with confirmation
+    handleCloseEditModal() {
+      if (this.hasUnsavedChanges) {
+        this.showDiscardConfirmation = true;
+      } else {
+        this.closeEditPersonalCalendarModal();
+      }
+    },
+
+    // Confirm discarding changes and close the modal
+    discardEditChanges() {
+      this.showDiscardConfirmation = false;
+      this.closeEditPersonalCalendarModal();
+    },
+
+    // Cancel discarding changes and keep the modal open
+    cancelDiscard() {
+      this.showDiscardConfirmation = false;
+    },
+
+    // Close Edit Personal Calendar Modal and reset form
+    closeEditPersonalCalendarModal() {
+      this.showEditPersonalCalendarModal = false;
+      this.editPersonalCalendarName = '';
+      this.editPersonalCalendarColor = '';
+      this.initialEditPersonalCalendarName = '';
+      this.initialEditPersonalCalendarColor = '';
+    },
+
+    // Edit Personal Calendar
+    // Submit edited personal calendar
+    async editPersonalCalendar() {
+      try {
+        const updatedData = {
+          name: this.editPersonalCalendarName,
+          color: this.editPersonalCalendarColor,
+        };
+        await calendarService.editPersonalCalendar(
+            this.activeCalendar.calendarId,
+            this.userId,
+            updatedData
+        );
+
+        this.notify({ type: 'success', message: 'Personal calendar updated successfully.' });
+        this.closeEditPersonalCalendarModal();
+        await this.fetchCalendars();
+        this.closeDetailsModal();
+      } catch (err) {
+        console.error('Error editing personal calendar:', err);
+        const errorMsg = err?.response?.data?.error || 'Failed to edit personal calendar.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
     // Edit Calendar Modal
     openEditCalendarModal() {
       this.showEditCalendarModal = true;
@@ -931,32 +1291,45 @@ export default {
     confirmDeleteCalendar() {
       this.showConfirmDeleteModal = true;
     },
+
     async deleteCalendar() {
       if (!this.activeCalendar) return;
+
+      this.isDeleting = true; // Start loading
+
       try {
         if (this.activeCalendar.isGroup) {
-          // Delete group calendar (admin only)
-          await calendarService.deleteGroupCalendar(
-              this.activeCalendar.calendarId,
-              this.userId // adminId
-          );
+          await calendarService.deleteGroupCalendar(this.activeCalendar.calendarId, this.userId); // userId is adminId here
+          this.notify({ type: 'success', message: 'Group calendar deleted successfully.' });
         } else {
-          // Delete personal calendar
-          await calendarService.deletePersonalCalendar(
-              this.activeCalendar.calendarId,
-              this.userId
-          );
+          await calendarService.deletePersonalCalendar(this.activeCalendar.calendarId, this.userId);
+          this.notify({ type: 'success', message: 'Personal calendar deleted successfully.' });
         }
-        this.notify({ type: 'success', message: 'Calendar deleted successfully.' });
+
+        // Refresh calendars after deletion
         await this.fetchCalendars();
+
+        // Set the active calendar to default or another available calendar
+        if (this.defaultCalendarId) {
+          this.setActiveCalendar(this.defaultCalendarId);
+        } else if (this.calendars.length > 0) {
+          this.setActiveCalendar(this.calendars[0].calendarId);
+        } else {
+          // No calendars left, handle accordingly
+          this.$store.commit('SET_ACTIVE_CALENDAR_ID', null);
+        }
+
         this.closeDetailsModal();
-        this.closeConfirmDeleteModal();
+        this.closeConfirmDeleteModal(); // Close the confirmation modal after successful deletion
       } catch (err) {
         console.error('Error deleting calendar:', err);
         const errorMsg = err?.response?.data?.error || 'Failed to delete calendar.';
         this.notify({ type: 'error', message: errorMsg });
+      } finally {
+        this.isDeleting = false; // End loading
       }
     },
+
     closeConfirmDeleteModal() {
       this.showConfirmDeleteModal = false;
     }
@@ -1142,8 +1515,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1500; /* Adjust as needed */
-  /* Ensures the content doesn't scroll behind the modal */
+  z-index: 1500; /* Base z-index */
   overflow: hidden;
 }
 
@@ -1531,4 +1903,116 @@ export default {
 body.dark-mode .logo-link:hover {
   opacity: 0.9;
 }
+
+
+/* Import Calendar Button */
+.btn-import-calendar {
+  background-color: #17a2b8; /* Teal color */
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px; /* Adjust spacing as needed */
+}
+.btn-import-calendar:hover {
+  background-color: #138496;
+}
+
+/* Spinner Styles */
+.spinner {
+  border: 3px solid #f3f3f3; /* Light gray */
+  border-top: 3px solid #fff; /* White or adjust based on button background */
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Ensure spinner contrasts with button background */
+.btn-submit[disabled] .spinner {
+  border-top: 3px solid #ffffff; /* Adjust as needed */
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading Indicator Alignment */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.loading-indicator span {
+  display: flex;
+  align-items: center;
+}
+
+/* New .edit-modal class with higher z-index */
+.edit-modal {
+  z-index: 2500; /* Higher than the base and other modals */
+}
+
+/* ConfirmationModal.vue or corresponding CSS */
+.ConfirmationModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000; /* Ensure it's higher than other modals */
+}
+
+.ConfirmationModal .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+
+/* Existing button styles */
+
+.btn-submit {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-submit:hover {
+  background-color: var(--event-hover-color);
+}
+
+.btn-cancel {
+  background-color: #6c757d; /* Gray */
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
 </style>

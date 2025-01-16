@@ -5,6 +5,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { buildFunctionUrl } from '@/services/urlBuilder'; // <-- use our helper
 import calendarService from '@/services/calendarService';
+import authService from '@/services/authService'; // Import the authService
 
 export default createStore({
     state: {
@@ -38,6 +39,8 @@ export default createStore({
             state.allEvents = [];
             state.userDoc = {};
             localStorage.removeItem('activeCalendarId');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('defaultCalendarId');
         },
         ADD_NOTIFICATION(state, notification) {
             state.notifications.push(notification);
@@ -53,10 +56,10 @@ export default createStore({
         },
     },
     actions: {
+        // Login Action
         async login({ commit, dispatch }, credentials) {
             try {
-                // Replaces: axios.post(`${BACKEND_ENDPOINT}/login`, credentials)
-                const response = await axios.post(buildFunctionUrl('/login'), credentials);
+                const response = await authService.login(credentials.username, credentials.password);
                 const { userId, default_calendar_id } = response.data;
 
                 commit('SET_USER_ID', userId);
@@ -67,7 +70,7 @@ export default createStore({
                 commit('SET_USER_ID', userId);
                 await dispatch('fetchUserDoc');
 
-                // fetch calendars
+                // Fetch calendars
                 dispatch('fetchCalendars');
                 dispatch('notify', { type: 'success', message: 'Logged in successfully.' });
             } catch (error) {
@@ -76,24 +79,10 @@ export default createStore({
             }
         },
 
-        async fetchUserDoc({ commit, state }) {
-            try {
-                // Suppose your backend has GET /user/{userId}/profile
-                // that returns { username, email, etc. }
-                const response = await axios.get(
-                    buildFunctionUrl(`/user/${state.userId}/profile`)
-                );
-                // Then store it in Vuex
-                commit('SET_USER_DOC', response.data);
-            } catch (err) {
-                console.error('Failed to fetch user doc:', err);
-                // optionally show a notification
-            }
-        },
-
+        // Register Action
         async register({ commit, dispatch }, credentials) {
             try {
-                const response = await axios.post(buildFunctionUrl('/register'), credentials);
+                const response = await authService.register(credentials.username, credentials.password, credentials.email);
                 const { userId, homeCalendarId } = response.data;
 
                 commit('SET_USER_ID', userId);
@@ -103,6 +92,8 @@ export default createStore({
                 localStorage.setItem('defaultCalendarId', homeCalendarId);
                 localStorage.setItem('activeCalendarId', homeCalendarId);
 
+                // Optionally fetch user doc and calendars
+                await dispatch('fetchUserDoc');
                 dispatch('fetchCalendars');
                 dispatch('notify', { type: 'success', message: 'Registered successfully.' });
             } catch (error) {
@@ -114,13 +105,43 @@ export default createStore({
             }
         },
 
+        // Forgot Password Action
+        async forgotPassword({ dispatch }, email) {
+            try {
+                const response = await authService.forgotPassword(email);
+                dispatch('notify', { type: 'success', message: response.data.message || 'OTP sent successfully.' });
+            } catch (error) {
+                dispatch('notify', {
+                    type: 'error',
+                    message: error?.response?.data?.error || 'Failed to send OTP.',
+                });
+                throw error;
+            }
+        },
+
+        // Reset Password Action
+        async resetPassword({ dispatch }, { email, otp, newPassword }) {
+            try {
+                const response = await authService.resetPassword(email, otp, newPassword);
+                dispatch('notify', { type: 'success', message: response.data.message || 'Password reset successful.' });
+                // Optionally, redirect to login after successful password reset
+                // e.g., this.$router.push('/login'); // This should be handled in the component
+            } catch (error) {
+                dispatch('notify', {
+                    type: 'error',
+                    message: error?.response?.data?.error || 'Failed to reset password.',
+                });
+                throw error;
+            }
+        },
+
+        // Logout Action
         logout({ commit, dispatch }) {
             commit('CLEAR_AUTH');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('defaultCalendarId');
             dispatch('notify', { type: 'info', message: 'Logged out successfully.' });
         },
 
+        // Notification Action
         notify({ commit }, { type, message, duration = 4000 }) {
             const id = uuidv4();
             commit('ADD_NOTIFICATION', { id, type, message });
@@ -129,6 +150,20 @@ export default createStore({
             }, duration);
         },
 
+        // Fetch User Document Action
+        async fetchUserDoc({ commit, state }) {
+            try {
+                const response = await axios.get(
+                    buildFunctionUrl(`/user/${state.userId}/profile`)
+                );
+                commit('SET_USER_DOC', response.data);
+            } catch (err) {
+                console.error('Failed to fetch user doc:', err);
+                // Optionally, show a notification
+            }
+        },
+
+        // Fetch Calendars Action
         async fetchCalendars({ commit, state, dispatch }) {
             try {
                 const response = await calendarService.getUserCalendars(state.userId);
@@ -141,6 +176,7 @@ export default createStore({
             }
         },
 
+        // Fetch All Events Action
         async fetchAllEvents({ commit, state, dispatch }) {
             try {
                 const response = await calendarService.getAllEvents(state.userId);

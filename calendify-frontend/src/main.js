@@ -6,6 +6,7 @@ import '@/assets/styles/auth.css';
 import '@/assets/styles/variables.css';
 import '@/assets/styles/styles.css'; // Your existing global styles
 
+
 createApp(App)
     .use(store)
     .use(router)

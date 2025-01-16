@@ -1,5 +1,14 @@
 /* src/assets/css/auth.css */
 
+:root {
+    --text-color: white;
+}
+
+body.dark-mode {
+    --text-color: black;
+    /* Override other variables for dark mode */
+}
+
 /* 1. Set box-sizing globally */
 *,
 *::before,
@@ -256,9 +265,21 @@
     margin: 0;
 }
 
+/* Button Styles */
+.btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: var(--primary-color, #0078d4);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 .auth-main .auth-panel .btn:hover {
     /* Remove background-color hover effect, as background is animated */
-    /* background-color: var(--primary-hover-color); */
+    background-color: var(--event-hover-color, #005c9c);
     transform: translateY(-2px);
 }
 
@@ -292,6 +313,9 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .logo {
+        width: 150px;
+    }
     .auth-main {
         flex-direction: column;
         gap: 30px;

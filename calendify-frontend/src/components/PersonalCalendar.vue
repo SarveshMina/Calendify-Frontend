@@ -1,3 +1,4 @@
+<!-- src/components/PersonalCalendar.vue -->
 <template>
   <div :class="['personal-calendar', `theme-${calendarColor}`, { 'dark-mode': isDarkMode }]">
     <h2>{{ calendarName }}</h2>
@@ -232,6 +233,8 @@ export default {
             { params: { userId: this.userId } }
         );
         const events = res.data.events || [];
+        console.log('Fetched events:', events); // Debugging
+
         // Format for VueCal
         this.vueCalEvents = events.map((ev) => ({
           id: ev.eventId,
@@ -240,11 +243,28 @@ export default {
           end: this.formatForVueCal(ev.endTime),
           description: ev.description,
         }));
+        console.log('Formatted vueCalEvents:', this.vueCalEvents); // Debugging
       } catch (err) {
         this.error = err?.response?.data?.error || 'Failed to load events.';
         this.notify({ type: 'error', message: this.error });
       }
     },
+    async updatePersonalCalendar() {
+      try {
+        const updatedData = {
+          name: this.updatedCalendarName,
+          color: this.updatedCalendarColor,
+        };
+        await calendarService.editPersonalCalendar(this.calendarId, this.userId, updatedData);
+        this.$emit('update-success');
+        this.$store.dispatch('fetchCalendars');
+        this.notify({ type: 'success', message: 'Personal calendar updated successfully.' });
+      } catch (err) {
+        const errorMsg = err?.response?.data?.error || 'Failed to update personal calendar.';
+        this.notify({ type: 'error', message: errorMsg });
+      }
+    },
+
 
     // Convert ISO date to "YYYY-MM-DD HH:mm" for VueCal
     formatForVueCal(isoString) {
@@ -256,7 +276,7 @@ export default {
       const day = String(d.getDate()).padStart(2, '0');
       const hh = String(d.getHours()).padStart(2, '0');
       const mm = String(d.getMinutes()).padStart(2, '0');
-      return `${y}-${m}-${day} ${hh}:${mm}`;
+      return `${y}-${m}-${day} ${hh}:${mm}`; // Reverted to space separator
     },
 
     // Convert Date obj to "YYYY-MM-DDTHH:mm"
@@ -310,39 +330,9 @@ export default {
           const errorMsg = err?.response?.data?.error || 'Failed to create event.';
           this.notify({
             type: 'error',
-            message: `<div>${errorMsg.replace(/\n/g, '<br>')}</div>`,
+            message: `<strong>Error:</strong> ${errorMsg.replace(/\n/g, '<br>')}`
           });
         }
-      }
-    },
-
-    async handleConflictProceed() {
-      try {
-        const payload = {
-          userId: this.userId,
-          title: this.newEventTitle,
-          startTime: this.newEventStart,
-          endTime: this.newEventEnd,
-          description: this.newEventDescription,
-        };
-        // POST to /calendar/{this.calendarId}/event with override
-        await calendarService.addEvent(this.calendarId, payload, true);
-
-        // Refresh the store’s all events
-        await this.fetchAllEvents();
-
-        this.notify({
-          type: 'success',
-          message: 'Event created successfully despite conflicts.',
-        });
-        this.closeAddEventModal();
-        this.closeConflictModal();
-      } catch (err) {
-        const errorMsg = err?.response?.data?.error || 'Failed to create event with override.';
-        this.notify({
-          type: 'error',
-          message: `<div>${errorMsg.replace(/\n/g, '<br>')}</div>`,
-        });
       }
     },
     closeConflictModal() {
@@ -365,13 +355,19 @@ export default {
 
     // Edit button => open the Edit Event modal
     openEditModal() {
-      if (!this.selectedEvent) return;
+      if (!this.selectedEvent) {
+        this.notify({ type: 'error', message: 'No event selected for editing.' });
+        return;
+      }
 
-      this.showDetailModal = false; // close the detail modal
+      console.log('Selected Event:', this.selectedEvent); // Debugging
+
+      this.showDetailModal = false; // Close the detail modal
       this.showEditModal = true;
 
       // Pre-fill edit form
       this.editEventTitle = this.selectedEvent.title;
+
       // Convert "YYYY-MM-DD HH:mm" => Date => local datetime
       const startDate = new Date(this.selectedEvent.start.replace(' ', 'T'));
       const endDate = new Date(this.selectedEvent.end.replace(' ', 'T'));
@@ -469,36 +465,7 @@ export default {
 </script>
 
 <style scoped>
-.modal-backdrop.add-event-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1500; /* Adjust as needed */
-  /* Ensures the content doesn't scroll behind the modal */
-  overflow: hidden;
-}
-
-.modal-backdrop.event-info-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1500; /* Adjust as needed */
-  /* Ensures the content doesn't scroll behind the modal */
-  overflow: hidden;
-}
-
+/* Modal Backdrop Styles */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -519,7 +486,7 @@ export default {
   background-color: #fff;
   /* Control how wide the modal can go on large screens */
   width: 500px;
-  max-width: 95%;  /* For smaller screens, let it scale down */
+  max-width: 95%; /* For smaller screens, let it scale down */
   max-height: 90vh; /* Keep the modal from growing taller than the viewport */
   overflow-y: auto; /* Scroll inside the modal if content is too tall */
   border-radius: 8px;
@@ -527,7 +494,7 @@ export default {
   box-sizing: border-box;
 }
 
-/* If you want more consistent spacing inside form inputs: */
+/* Consistent spacing inside form inputs */
 .modal-content form .form-group {
   margin-bottom: 16px;
 }
@@ -538,20 +505,105 @@ export default {
   display: inline-block;
 }
 
-.modal-content form .form-group input,
-.modal-content form .form-group select,
-.modal-content form .form-group textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+/* Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
 }
 
-/* Larger screens can have a larger modal */
-@media (min-width: 768px) {
-  .modal-content {
-    width: 600px;
-  }
+.btn-submit {
+  background-color: #0078d4; /* Primary color */
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover:enabled {
+  background-color: #005c9c;
+}
+
+.btn-submit:disabled {
+  background-color: #a0c4e3;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #6c757d; /* Gray */
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel:hover:enabled {
+  background-color: #5a6268;
+}
+
+.btn-cancel:disabled {
+  background-color: #b3b3b3;
+  cursor: not-allowed;
+}
+
+/* "Add Event" Button Styling */
+.btn-add-event {
+  margin-top: 10px;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-add-event:hover {
+  background-color: var(--event-hover-color);
+}
+
+/* Spinner Styles */
+.spinner {
+  border: 3px solid #f3f3f3; /* Light gray */
+  border-top: 3px solid #0078d4; /* Primary color */
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading Indicator Alignment */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.loading-indicator span {
+  display: flex;
+  align-items: center;
+}
+
+/* Error Message Styling */
+.error {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #f5c6cb;
+  border-radius: 4px;
 }
 </style>

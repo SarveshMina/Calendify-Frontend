@@ -15,9 +15,9 @@
 
     <!-- Slogan and Explanation -->
     <section class="auth-intro">
-      <!-- 1. Added Logo -->
+      <!-- 1. Dynamic Logo Based on Dark Mode -->
       <div class="logo-container">
-        <img src="@/assets/icons/logo-light.webp" alt="Calendify Logo" class="logo" />
+        <img :src="currentLogo" alt="Calendify Logo" class="logo" />
       </div>
       <h2 class="slogan">Organize Your Life Seamlessly</h2>
       <p class="description">
@@ -165,7 +165,7 @@
       <!-- Reset Password Panel -->
       <div v-else-if="currentView === 'resetPassword'" class="auth-panel reset-password-panel">
         <h3>Enter OTP & Reset Password</h3>
-        <form @submit.prevent="resetPassword">
+        <form @submit.prevent="performResetPassword">
           <!-- EMAIL -->
           <div class="form-group">
             <input
@@ -240,12 +240,22 @@
     <footer class="auth-footer">
       <p>&copy; 2025 Calendify. All rights reserved.</p>
     </footer>
+
+    <!-- Notifications -->
+    <div class="notifications">
+      <div
+          v-for="notification in notifications"
+          :key="notification.id"
+          :class="['notification', notification.type]"
+      >
+        {{ notification.message }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapActions } from 'vuex';
-import authService from '@/services/authService'; // Import the authService
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'AuthLanding',
@@ -290,10 +300,20 @@ export default {
       sunIcon: require('@/assets/icons/sun.svg'),
       eyeIcon: require('@/assets/icons/eye.png'), // Eye icon for show password
       eyeOffIcon: require('@/assets/icons/eye-off.png'), // Eye-off icon for hide password
+      // Logo assets
+      lightLogo: require('@/assets/icons/logo-light.png'),
+      darkLogo: require('@/assets/icons/logo-dark.png'),
     };
   },
+  computed: {
+    ...mapGetters(['notifications']),
+    // Compute the current logo based on darkMode
+    currentLogo() {
+      return this.darkMode ? this.lightLogo : this.darkLogo;
+    },
+  },
   methods: {
-    ...mapActions(['login', 'register']),
+    ...mapActions(['login', 'register', 'forgotPassword', 'resetPassword', 'notify']),
 
     // Switch between different views
     switchView(view) {
@@ -336,7 +356,7 @@ export default {
         await this.register({
           username: this.registerUsername,
           password: this.registerPassword,
-          email: this.registerEmail
+          email: this.registerEmail,
         });
         // If register is successful, navigate to dashboard
         this.$router.push('/dashboard');
@@ -350,7 +370,7 @@ export default {
       this.forgotPasswordError = null;
       this.forgotPasswordMessage = null;
       try {
-        const response = await authService.forgotPassword(this.forgotEmail);
+        const response = await this.forgotPassword(this.forgotEmail);
         this.forgotPasswordMessage = response.data.message || 'OTP sent successfully.';
         // Automatically switch to resetPassword view after requesting OTP
         this.switchView('resetPassword');
@@ -362,7 +382,7 @@ export default {
     },
 
     // Reset Password: Submit OTP and New Password
-    async resetPassword() {
+    async performResetPassword() {
       this.resetPasswordError = null;
       this.resetPasswordMessage = null;
 
@@ -372,11 +392,11 @@ export default {
       }
 
       try {
-        const response = await authService.resetPassword(
-            this.resetEmail,
-            this.resetOTP,
-            this.resetPasswordInput
-        );
+        const response = await this.resetPassword({
+          email: this.resetEmail,
+          otp: this.resetOTP,
+          newPassword: this.resetPasswordInput,
+        });
         this.resetPasswordMessage = response.data.message || 'Password reset successful.';
         // Optionally, redirect to login after successful password reset
         setTimeout(() => {
@@ -455,6 +475,14 @@ export default {
   font-weight: 500;
 }
 
+/* Add styles for error messages */
+.error {
+  color: #f44336; /* Red color for errors */
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
 /* Additional styles for the logo */
 .logo-container {
   display: flex;
@@ -465,5 +493,58 @@ export default {
 .logo {
   width: 200px; /* Adjust size as needed */
   height: auto;
+}
+
+/* Styles for notifications */
+.notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.notification {
+  background-color: #fff;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.5s ease;
+}
+
+.notification.success {
+  border-left: 5px solid #4caf50;
+}
+
+.notification.error {
+  border-left: 5px solid #f44336;
+}
+
+.notification.info {
+  border-left: 5px solid #2196f3;
+}
+
+/* Apply text color based on CSS variable */
+.auth-container {
+  color: var(--text-color);
+}
+
+/* Ensure child elements inherit the text color */
+.auth-container h1,
+.auth-container h2,
+.auth-container h3,
+.auth-container p,
+.auth-container a {
+  color: var(--text-color);
+}
+
+/* Style links for better visibility */
+.auth-container a {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.auth-container a:hover {
+  opacity: 0.8;
 }
 </style>

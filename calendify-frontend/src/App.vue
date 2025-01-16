@@ -10,6 +10,7 @@ import { mapGetters, mapActions } from 'vuex';
 import NotificationPopUp from '@/components/NotificationPopUp.vue';
 
 
+
 export default {
   name: 'App',
   components: {
