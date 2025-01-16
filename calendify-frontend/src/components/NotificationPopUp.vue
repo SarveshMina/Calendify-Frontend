@@ -97,6 +97,14 @@ export default {
   }
 }
 
+/* Transition Classes */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .notification-container {
@@ -110,12 +118,5 @@ export default {
     width: 100%;
     max-width: 400px;
   }
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
 }
 </style>

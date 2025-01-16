@@ -16,4 +16,5 @@ export function buildFunctionUrl(path) {
     const trimmedPath = path.startsWith('/') ? path : `/${path}`;
     return `${BACKEND_URL}${trimmedPath}`;
 }
+
 // ?code=${FUNCTION_KEY}

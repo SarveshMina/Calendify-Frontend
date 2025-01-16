@@ -4,7 +4,14 @@
     <!-- Header -->
     <header class="blue-header">
       <div class="header-left">
-        <h1>Welcome to Calendify</h1>
+        <router-link to="/dashboard" class="logo-link">
+          <img
+              :src="darkMode ? require('@/assets/icons/logo-dark.webp') : require('@/assets/icons/logo-light.webp')"
+              alt="Calendify Logo"
+              class="calendify-logo"
+          />
+          <h1>Welcome to Calendify</h1>
+        </router-link>
       </div>
       <div class="header-right">
         <span>User ID: {{ userId }}</span>
@@ -1478,6 +1485,50 @@ export default {
 
 /* Hover Effects */
 .account-panel button:hover {
+  opacity: 0.9;
+}
+
+
+/* Calendify Logo Styles */
+.calendify-logo {
+  width: 75px; /* Adjust the size as needed */
+  height: auto;
+  margin-right: 10px; /* Space between logo and welcome text */
+  object-fit: contain; /* Ensure the logo scales properly */
+}
+
+/* Adjust Header Left Alignment */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo Link Styles */
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit; /* Inherit text color from parent */
+}
+
+.logo-link:hover {
+  opacity: 0.8; /* Slight fade on hover */
+}
+
+/* Responsive Adjustments for Logo */
+@media (max-width: 768px) {
+  .calendify-logo {
+    width: 50px; /* Smaller logo on smaller screens */
+    margin-right: 8px;
+  }
+
+  .header-left h1 {
+    font-size: 1.2rem; /* Adjust font size for smaller screens */
+  }
+}
+
+/* Optional: Dark Mode Logo Hover Effect */
+body.dark-mode .logo-link:hover {
   opacity: 0.9;
 }
 </style>

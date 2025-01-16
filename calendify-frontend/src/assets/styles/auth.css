@@ -1,5 +1,12 @@
 /* src/assets/css/auth.css */
 
+/* 1. Set box-sizing globally */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 /* Ensure these styles are scoped only to AuthLanding */
 .auth-container {
     position: relative;
@@ -88,6 +95,17 @@
     padding: 20px 40px;
 }
 
+.auth-intro .logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px; /* Space between logo and slogan */
+}
+
+.auth-intro .logo {
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+}
+
 .auth-intro .slogan {
     font-size: 2rem;
     color: var(--dynamic-text-color); /* Dynamic color */
@@ -149,7 +167,7 @@
     /* Remove box-shadow to eliminate borders */
     box-shadow: none;
     transition: transform 0.3s ease, background 0.3s ease;
-    width: 350px;
+    width: 400px;
 }
 
 .auth-main .auth-panel:hover {
@@ -177,7 +195,7 @@
 
 .auth-main .auth-panel .auth-input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px;
     border: none;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.2);
@@ -222,21 +240,20 @@
     transform: translateY(-50%) rotate(180deg);
 }
 
-/* Dynamic Button Colors */
+/* Ensure buttons have consistent width and padding */
 .auth-main .auth-panel .btn {
     width: 100%;
-    padding: 12px;
+    padding: 12px; /* Matches .auth-input */
     border: none;
     border-radius: 8px;
-    /* Remove fixed background color */
-    /* background-color: var(--primary-color); */
     color: #000; /* Set text color to black for contrast */
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    /* Add animation for background-color */
     animation: changeButtonColor 30s infinite;
+    /* Remove any default margin */
+    margin: 0;
 }
 
 .auth-main .auth-panel .btn:hover {
@@ -300,6 +317,11 @@
 
     .auth-intro .description {
         font-size: 1rem;
+    }
+
+    /* Adjust logo size on mobile */
+    .auth-intro .logo {
+        width: 80px; /* Smaller size on mobile */
     }
 }
 
