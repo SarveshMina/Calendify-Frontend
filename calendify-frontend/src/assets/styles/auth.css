@@ -376,3 +376,36 @@ body.dark-mode {
 .auth-header .app-name, .auth-intro .slogan, .auth-main .auth-panel h3 {
     animation: changeTextColor 30s infinite;
 }
+.auth-panel form > .btn + .google-signin-wrapper {
+    margin-top: 2rem;
+}
+
+.auth-panel form .google-signin-wrapper {
+    align-self: center; /* Centers the button horizontally */
+    width: 200px; /* Matches the rendered width */
+    height: 30px; /* Matches the rendered height */
+    background-color: #4285F4; /* Matches the 'filled_blue' theme */
+    color: white; /* Text color for contrast */
+    border: none; /* Removes any border */
+    border-radius: 20px; /* Pill shape matches the 'pill' shape */
+    padding: 0; /* Adjust padding to align with the Google button */
+    display: flex; /* Ensures proper alignment of icon and text */
+    justify-content: center; /* Centers the content horizontally */
+    align-items: center; /* Centers the content vertically */
+    font-size: 14px; /* Matches the 'medium' size font */
+    font-weight: 500; /* Adds some weight for visibility */
+    cursor: pointer; /* Ensures the cursor changes on hover */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
+}
+
+.auth-panel form .google-signin-wrapper:hover {
+    background-color: #357ae8; /* Slightly darker blue for hover effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+}
+
+.auth-panel form .google-signin-wrapper span {
+    font-family: Arial, sans-serif; /* Matches the Google button font */
+    font-size: 14px; /* Consistent font size */
+    text-transform: none; /* Prevents text capitalization */
+}

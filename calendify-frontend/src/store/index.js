@@ -3,7 +3,7 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { buildFunctionUrl } from '@/services/urlBuilder'; // <-- use our helper
+import { buildFunctionUrl } from '@/services/urlBuilder'; // <-- using helper
 import calendarService from '@/services/calendarService';
 import authService from '@/services/authService'; // Import the authService
 
@@ -146,6 +146,12 @@ export default createStore({
         // Logout Action
         logout({ commit, dispatch }) {
             commit('CLEAR_AUTH');
+            // After your user logs out:
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                // This revokes the token if the user granted the "remember me" or "auto login"
+                window.google.accounts.id.disableAutoSelect();
+            }
+
             dispatch('notify', { type: 'info', message: 'Logged out successfully.' });
         },
 
@@ -156,6 +162,45 @@ export default createStore({
             setTimeout(() => {
                 commit('REMOVE_NOTIFICATION', id);
             }, duration);
+        },
+
+        // 1) New action: Google Sign-In
+        async googleSignIn({ commit, dispatch }, idToken) {
+            try {
+                // Post the ID token to your backend
+                const response = await axios.post(buildFunctionUrl('/auth/google'), {
+                    idToken,
+                });
+
+                // The backend returns { message, userId, default_calendar_id, ... }
+                const { userId, default_calendar_id } = response.data;
+
+                // Store user info
+                commit('SET_USER_ID', userId);
+                commit('SET_DEFAULT_CALENDAR_ID', default_calendar_id);
+                commit('SET_ACTIVE_CALENDAR_ID', default_calendar_id);
+
+                // Keep localStorage in sync
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('defaultCalendarId', default_calendar_id);
+                localStorage.setItem('activeCalendarId', default_calendar_id);
+
+                // Optionally fetch user doc & calendars
+                await dispatch('fetchUserDoc');
+                await dispatch('fetchCalendars');
+
+                // Notify the user
+                dispatch('notify', { type: 'success', message: 'Google sign-in successful!' });
+
+                return response;
+            } catch (error) {
+                // Show an error notification
+                dispatch('notify', {
+                    type: 'error',
+                    message: error?.response?.data?.error || 'Google sign-in failed.',
+                });
+                throw error;
+            }
         },
 
         // Fetch User Document Action

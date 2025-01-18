@@ -67,6 +67,9 @@
             </span>
             <span v-else>Login</span>
           </button>
+          <div class="google-signin-wrapper">
+            <div id="google-button-login"></div>
+          </div>
         </form>
         <p class="switch-link">
           Don't have an account? <a href="#" @click.prevent="switchView('register')">Register</a>
@@ -149,6 +152,10 @@
             </span>
             <span v-else>Register</span>
           </button>
+
+          <div class="google-signin-wrapper">
+            <div id="google-button-register"></div>
+          </div>
         </form>
         <p class="switch-link">
           Already have an account? <a href="#" @click.prevent="switchView('login')">Login</a>
@@ -356,8 +363,20 @@ export default {
       return this.darkMode ? this.lightLogo : this.darkLogo;
     },
   },
+
+  watch: {
+    currentView(newVal) {
+      if (newVal === 'login' || newVal === 'register') {
+        // Re-render the Google button for whichever view is active
+        this.$nextTick(() => {
+          this.renderGoogleButton();
+        });
+      }
+    }
+  },
+
   methods: {
-    ...mapActions(['login', 'register', 'forgotPassword', 'resetPassword', 'notify']),
+    ...mapActions(['login', 'register', 'forgotPassword', 'resetPassword', 'notify',  'googleSignIn']),
 
     // Switch between different views
     switchView(view) {
@@ -390,6 +409,23 @@ export default {
       this.clearMessages();
     },
 
+    handleGoogleLogin(response) {
+      const idToken = response.credential;
+      this.handleGoogleIDToken(idToken);
+    },
+
+    async handleGoogleIDToken(idToken) {
+      try {
+        // Dispatch the Vuex action that calls the backend
+        await this.googleSignIn(idToken);
+        // If successful, go to the dashboard
+        this.$router.push('/dashboard');
+      } catch (err) {
+        console.error(err);
+        // Show an error if needed
+      }
+    },
+
     // Clear all messages
     clearMessages() {
       this.loginError = null;
@@ -399,6 +435,44 @@ export default {
       this.resetPasswordError = null;
       this.resetPasswordMessage = null;
     },
+
+    renderGoogleButton() {
+      if (!window.google?.accounts?.id) return;
+
+      window.google.accounts.id.initialize({
+        client_id: '254139626237-l4klntpne4skrjof2401ecr4l6tv275s.apps.googleusercontent.com',
+        callback: this.handleGoogleLogin,
+        auto_select: false,
+      });
+
+      let containerId = '';
+      if (this.currentView === 'login') {
+        containerId = 'google-button-login';
+      } else if (this.currentView === 'register') {
+        containerId = 'google-button-register';
+      } else {
+        return;
+      }
+
+      const container = document.getElementById(containerId);
+      if (container) {
+        container.innerHTML = ''; // Clear any previous button
+        window.google.accounts.id.renderButton(container, {
+          type: 'standard',
+          theme: 'filled_blue',
+          size: 'medium',         // 'small' | 'medium' | 'large'
+          shape: 'pill',          // or 'rectangular', etc.
+          text: 'signin_with',
+          logo_alignment: 'left',
+          width: 200,             // reduce from 300 to 220 (or 200) for a smaller button
+          height: 40,             // reduce from 60 to 40 for a smaller button
+        });
+      }
+
+      // Optionally cancel One Tap if you want to only show the button
+      window.google.accounts.id.cancel();
+    },
+
 
     // Login method
     async doLogin() {
@@ -550,6 +624,33 @@ export default {
     if (storedDarkMode) {
       this.darkMode = true;
       document.body.classList.add('dark-mode');
+    }
+    
+    this.renderGoogleButton();
+
+    if (this.currentView === 'login' || this.currentView === 'register') {
+      this.$nextTick(() => {
+        this.renderGoogleButton();
+      });
+    }
+
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.initialize({
+        client_id: '254139626237-l4klntpne4skrjof2401ecr4l6tv275s.apps.googleusercontent.com',
+        callback: (response) => {
+          // Extract the ID token from Google's response
+          const idToken = response.credential;
+          // Pass it into our existing method
+          this.handleGoogleIDToken(idToken);
+        },
+        auto_select: false,
+      });
+
+      window.google.accounts.id.renderButton(
+          document.getElementById('google-button-container'),
+          { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', logo_alignment: 'left' }
+      );
+      window.google.accounts.id.cancel();
     }
   },
 };
@@ -762,5 +863,20 @@ export default {
 
 .auth-header .app-name, .auth-intro .slogan, .auth-main .auth-panel h3 {
   animation: changeTextColor 30s infinite;
+}
+
+.google-signin-wrapper {
+  margin: 40px auto 20px auto !important; /* Force auto left/right */
+  width: fit-content;                     /* Let content define width */
+  display: flex;                          /* So we can flex-align the button itself */
+  justify-content: center;
+  align-items: center;
+  background: var(--primary-color, #0078d4);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.auth-panel form > .btn + .google-signin-wrapper {
+  margin-top: 2rem;
 }
 </style>
