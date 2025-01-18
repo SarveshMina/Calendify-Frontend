@@ -73,6 +73,9 @@ export default createStore({
                 // Fetch calendars
                 dispatch('fetchCalendars');
                 dispatch('notify', { type: 'success', message: 'Logged in successfully.' });
+
+                // Return response for frontend handling
+                return response;
             } catch (error) {
                 dispatch('notify', { type: 'error', message: error?.response?.data?.error || 'Login failed.' });
                 throw error;
@@ -96,6 +99,9 @@ export default createStore({
                 await dispatch('fetchUserDoc');
                 dispatch('fetchCalendars');
                 dispatch('notify', { type: 'success', message: 'Registered successfully.' });
+
+                // Return response for frontend handling
+                return response;
             } catch (error) {
                 dispatch('notify', {
                     type: 'error',
@@ -110,6 +116,8 @@ export default createStore({
             try {
                 const response = await authService.forgotPassword(email);
                 dispatch('notify', { type: 'success', message: response.data.message || 'OTP sent successfully.' });
+                // Return response for frontend handling
+                return response;
             } catch (error) {
                 dispatch('notify', {
                     type: 'error',
@@ -124,8 +132,8 @@ export default createStore({
             try {
                 const response = await authService.resetPassword(email, otp, newPassword);
                 dispatch('notify', { type: 'success', message: response.data.message || 'Password reset successful.' });
-                // Optionally, redirect to login after successful password reset
-                // e.g., this.$router.push('/login'); // This should be handled in the component
+                // Return response for frontend handling
+                return response;
             } catch (error) {
                 dispatch('notify', {
                     type: 'error',

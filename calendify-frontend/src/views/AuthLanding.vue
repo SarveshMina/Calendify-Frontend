@@ -57,7 +57,16 @@
             />
           </div>
           <p v-if="loginError" class="error">{{ loginError }}</p>
-          <button type="submit" class="btn btn-primary">Login</button>
+          <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="loginLoading"
+          >
+            <span v-if="loginLoading" class="button-content">
+              <SpinnerLoader /> Logging in...
+            </span>
+            <span v-else>Login</span>
+          </button>
         </form>
         <p class="switch-link">
           Don't have an account? <a href="#" @click.prevent="switchView('register')">Register</a>
@@ -130,7 +139,16 @@
           </div>
 
           <p v-if="registerError" class="error">{{ registerError }}</p>
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="registerLoading"
+          >
+            <span v-if="registerLoading" class="button-content">
+              <SpinnerLoader /> Registering...
+            </span>
+            <span v-else>Register</span>
+          </button>
         </form>
         <p class="switch-link">
           Already have an account? <a href="#" @click.prevent="switchView('login')">Login</a>
@@ -155,7 +173,16 @@
           <p v-if="forgotPasswordError" class="error">{{ forgotPasswordError }}</p>
           <p v-if="forgotPasswordMessage" class="success">{{ forgotPasswordMessage }}</p>
 
-          <button type="submit" class="btn btn-primary">Send OTP</button>
+          <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="forgotPasswordLoading"
+          >
+            <span v-if="forgotPasswordLoading" class="button-content">
+              <SpinnerLoader /> Sending OTP...
+            </span>
+            <span v-else>Send OTP</span>
+          </button>
         </form>
         <p class="switch-link">
           Remembered your password? <a href="#" @click.prevent="switchView('login')">Login</a>
@@ -228,7 +255,16 @@
           <p v-if="resetPasswordError" class="error">{{ resetPasswordError }}</p>
           <p v-if="resetPasswordMessage" class="success">{{ resetPasswordMessage }}</p>
 
-          <button type="submit" class="btn btn-primary">Reset Password</button>
+          <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="resetPasswordLoading"
+          >
+            <span v-if="resetPasswordLoading" class="button-content">
+              <SpinnerLoader /> Resetting...
+            </span>
+            <span v-else>Reset Password</span>
+          </button>
         </form>
         <p class="switch-link">
           Need a new OTP? <a href="#" @click.prevent="switchView('forgotPassword')">Request OTP</a>
@@ -256,9 +292,13 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex';
+import SpinnerLoader from '@/components/SpinnerLoader.vue'; // Import SpinnerLoader
 
 export default {
   name: 'AuthLanding',
+  components: {
+    SpinnerLoader, // Register SpinnerLoader
+  },
   data() {
     return {
       // Current view state: 'login', 'register', 'forgotPassword', 'resetPassword'
@@ -269,6 +309,7 @@ export default {
       loginPassword: '',
       loginError: null,
       showLoginPassword: false, // Tracks login password visibility
+      loginLoading: false, // Tracks login loading state
 
       // Register data
       registerUsername: '',
@@ -278,11 +319,13 @@ export default {
       registerError: null,
       showRegisterPassword: false, // Tracks register password visibility
       showConfirmPassword: false, // Tracks confirm password visibility
+      registerLoading: false, // Tracks register loading state
 
       // Forgot Password data
       forgotEmail: '',
       forgotPasswordError: null,
       forgotPasswordMessage: null,
+      forgotPasswordLoading: false, // Tracks forgot password loading state
 
       // Reset Password data
       resetEmail: '',
@@ -293,6 +336,7 @@ export default {
       resetPasswordMessage: null,
       showResetPassword: false,
       showConfirmResetPassword: false,
+      resetPasswordLoading: false, // Tracks reset password loading state
 
       // Dark mode
       darkMode: false,
@@ -317,6 +361,30 @@ export default {
 
     // Switch between different views
     switchView(view) {
+      // Prevent switching views if any action is loading
+      if (
+          this.loginLoading ||
+          this.registerLoading ||
+          this.forgotPasswordLoading ||
+          this.resetPasswordLoading
+      ) {
+        this.notify({
+          type: 'error',
+          message: 'Please wait for the current operation to complete.',
+        });
+        return;
+      }
+
+      // Additional validation: Ensure the view exists
+      const validViews = ['login', 'register', 'forgotPassword', 'resetPassword'];
+      if (!validViews.includes(view)) {
+        this.notify({
+          type: 'error',
+          message: 'Invalid view requested.',
+        });
+        return;
+      }
+
       this.currentView = view;
       // Clear all error and success messages when switching views
       this.clearMessages();
@@ -334,6 +402,8 @@ export default {
 
     // Login method
     async doLogin() {
+      this.loginLoading = true;
+      this.loginError = null;
       try {
         await this.login({
           username: this.loginUsername,
@@ -343,13 +413,18 @@ export default {
         this.$router.push('/dashboard');
       } catch (err) {
         this.loginError = err?.response?.data?.error || 'Login failed.';
+      } finally {
+        this.loginLoading = false;
       }
     },
 
     // Register method
     async doRegister() {
+      this.registerLoading = true;
+      this.registerError = null;
       if (this.registerPassword !== this.confirmPassword) {
         this.registerError = 'Passwords do not match.';
+        this.registerLoading = false;
         return;
       }
       try {
@@ -362,32 +437,44 @@ export default {
         this.$router.push('/dashboard');
       } catch (err) {
         this.registerError = err?.response?.data?.error || 'Registration failed.';
+      } finally {
+        this.registerLoading = false;
       }
     },
 
     // Forgot Password: Request OTP
     async requestResetPassword() {
+      this.forgotPasswordLoading = true;
       this.forgotPasswordError = null;
       this.forgotPasswordMessage = null;
       try {
         const response = await this.forgotPassword(this.forgotEmail);
+        console.log('Forgot Password Response:', response); // Debugging Line
         this.forgotPasswordMessage = response.data.message || 'OTP sent successfully.';
-        // Automatically switch to resetPassword view after requesting OTP
-        this.switchView('resetPassword');
         // Pre-fill the email in resetPassword view
         this.resetEmail = this.forgotEmail;
       } catch (err) {
+        console.error('Forgot Password Error:', err); // Debugging Line
         this.forgotPasswordError = err?.response?.data?.error || 'Failed to send OTP.';
+      } finally {
+        this.forgotPasswordLoading = false;
+      }
+
+      // Only switch view if there was no error
+      if (!this.forgotPasswordError) {
+        this.switchView('resetPassword');
       }
     },
 
     // Reset Password: Submit OTP and New Password
     async performResetPassword() {
+      this.resetPasswordLoading = true;
       this.resetPasswordError = null;
       this.resetPasswordMessage = null;
 
       if (this.resetPasswordInput !== this.confirmResetPassword) {
         this.resetPasswordError = 'Passwords do not match.';
+        this.resetPasswordLoading = false;
         return;
       }
 
@@ -409,6 +496,8 @@ export default {
         }, 2000); // 2-second delay before redirect
       } catch (err) {
         this.resetPasswordError = err?.response?.data?.error || 'Failed to reset password.';
+      } finally {
+        this.resetPasswordLoading = false;
       }
     },
 
@@ -546,5 +635,132 @@ export default {
 
 .auth-container a:hover {
   opacity: 0.8;
+}
+
+/* Ensure the spinner appears correctly inside the button */
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure buttons have consistent width and padding */
+.auth-main .auth-panel .btn {
+  width: 100%;
+  padding: 12px; /* Matches .auth-input */
+  border: none;
+  border-radius: 8px;
+  color: #000; /* Set text color to black for contrast */
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  animation: changeButtonColor 30s infinite;
+  /* Remove any default margin */
+  margin: 0;
+}
+
+/* Button Styles */
+.btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: var(--primary-color, #0078d4);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.auth-main .auth-panel .btn:hover {
+  /* Remove background-color hover effect, as background is animated */
+  background-color: var(--event-hover-color, #005c9c);
+  transform: translateY(-2px);
+}
+
+/* Button Background Color Animation */
+@keyframes changeButtonColor {
+  0% { background-color: #a1c4fd; }    /* Light Blue */
+  20% { background-color: #c2e9fb; }   /* Lighter Blue */
+  40% { background-color: #a1c4fd; }   /* Light Blue */
+  60% { background-color: #c2e9fb; }   /* Lighter Blue */
+  80% { background-color: #a1c4fd; }   /* Light Blue */
+  100% { background-color: #c2e9fb; }  /* Lighter Blue */
+}
+
+/* Error Messages */
+.auth-main .auth-panel .error {
+  color: #ff6b6b;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Footer Styles */
+.auth-footer {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: var(--footer-text-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .logo {
+    width: 150px;
+  }
+  .auth-main {
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px;
+  }
+
+  .auth-main .auth-panel {
+    width: 90%;
+    padding: 25px 30px;
+  }
+
+  .auth-header {
+    padding: 15px 20px;
+  }
+
+  .auth-header .app-name {
+    font-size: 2rem;
+  }
+
+  .auth-intro .slogan {
+    font-size: 1.8rem;
+  }
+
+  .auth-intro .description {
+    font-size: 1rem;
+  }
+
+  /* Adjust logo size on mobile */
+  .auth-intro .logo {
+    width: 80px; /* Smaller size on mobile */
+  }
+}
+
+/* Focus Styles for Accessibility */
+.auth-input:focus, .btn:focus {
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.5);
+}
+
+/* Dynamic Text Color Animations */
+@keyframes changeTextColor {
+  0% { color: var(--dynamic-color-1); }
+  16% { color: var(--dynamic-color-2); }
+  33% { color: var(--dynamic-color-3); }
+  50% { color: var(--dynamic-color-4); }
+  66% { color: var(--dynamic-color-5); }
+  83% { color: var(--dynamic-color-6); }
+  100% { color: var(--dynamic-color-7); }
+}
+
+.auth-header .app-name, .auth-intro .slogan, .auth-main .auth-panel h3 {
+  animation: changeTextColor 30s infinite;
 }
 </style>
