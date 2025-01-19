@@ -21,6 +21,7 @@
     "floating-vue": "^5.2.2",
     "focus-trap": "^7.6.2",
     "socket.io-client": "^4.8.1",
+    "stream-chat": "^8.51.0",
     "typeface-roboto": "^1.1.13",
     "vue": "^3.2.13",
     "vue-cal": "^4.10.0",

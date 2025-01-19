@@ -619,13 +619,31 @@ export default {
     this.darkMode = false;
     document.body.classList.remove('dark-mode');
 
+    const intervalId = setInterval(() => {
+      if (window.google?.accounts?.id) {
+        this.renderGoogleButton();
+        clearInterval(intervalId);
+      }
+    }, 100);
+
+    const waitForGoogle = () => {
+      if (window.googleScriptLoaded && window.google?.accounts?.id) {
+        // Now we can safely render the button
+        this.renderGoogleButton();
+      } else {
+        // Keep checking until loaded
+        requestAnimationFrame(waitForGoogle);
+      }
+    };
+    waitForGoogle();
+
     // Load dark mode preference from localStorage
     const storedDarkMode = localStorage.getItem('darkMode') === 'true';
     if (storedDarkMode) {
       this.darkMode = true;
       document.body.classList.add('dark-mode');
     }
-    
+
     this.renderGoogleButton();
 
     if (this.currentView === 'login' || this.currentView === 'register') {
@@ -645,11 +663,6 @@ export default {
         },
         auto_select: false,
       });
-
-      window.google.accounts.id.renderButton(
-          document.getElementById('google-button-container'),
-          { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', logo_alignment: 'left' }
-      );
       window.google.accounts.id.cancel();
     }
   },
