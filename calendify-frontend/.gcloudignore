@@ -1,0 +1,13 @@
+# .gcloudignore
+
+# Ignore all files by default
+*
+
+# Allow the app.yaml file
+!app.yaml
+
+# Allow all files and folders within the dist directory
+!dist/**
+
+# Exclude package.json and package-lock.json
+# Do not include these files in the deployment

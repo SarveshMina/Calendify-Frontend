@@ -1,30 +1,48 @@
-
 <!-- src/components/SpinnerLoader.vue -->
 <template>
-  <span class="spinner"></span>
+  <div class="spinner-container" :class="{ small: size === 'small' }">
+    <div class="spinner"></div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'SpinnerLoader',
-};
+  props: {
+    size: {
+      type: String,
+      default: 'normal',
+      validator: (value) => ['small', 'normal', 'large'].includes(value)
+    }
+  }
+}
 </script>
 
 <style scoped>
+.spinner-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #ffffff;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-right: 8px;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-container.small .spinner {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  to { 
+    transform: rotate(360deg); 
   }
 }
 </style>
